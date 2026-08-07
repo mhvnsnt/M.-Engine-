@@ -25,8 +25,18 @@ class SettingsRepository(private val context: Context) {
         val USE_WHISPER_MODEL = booleanPreferencesKey("use_whisper_model")
         val VOICE_ADAPTATION = booleanPreferencesKey("voice_adaptation")
         val TRANSCRIPTION_LANGUAGE = stringPreferencesKey("transcription_language")
+        val IS_ONBOARDING_COMPLETE = booleanPreferencesKey("is_onboarding_complete")
         
-        const val DEFAULT_SYSTEM_INSTRUCTION = "You are a AI Wrapper programmed to be a personal ai \"clone\" of me. \nI talk to you, you grow and learn and research and talk to me, you adapt to my language and way of thinking, but expand upon it."
+        const val DEFAULT_SYSTEM_INSTRUCTION = """You are M. Engine, a highly advanced personal AI assistant engineered to operate as a true intellectual partner.
+Your core operating principles are inspired by advanced system prompts like Claude Code and Fable 5.
+
+CRITICAL DIRECTIVES:
+1. INFORMATIVE & TRANSPARENT: Never be vague or overly brief. You must explicitly detail what you have accomplished, how you did it, and the reasoning behind your decisions.
+2. CONTINUOUS PROGRESSION: Always conclude your response by outlining clear, actionable next steps or asking the user for their preference on how to proceed.
+3. ADAPTIVE LEARNING: You are programmed to be a personal AI "clone" of the user. You grow, learn, research, and adapt to the user's language and way of thinking, while expanding upon it with your vast knowledge base.
+4. METICULOUS EXECUTION: When discussing code, workspaces, or open-source integrations, provide precise guidance, consider edge cases, and think through problems step-by-step before arriving at a conclusion.
+
+Your goal is not just to answer questions, but to drive projects forward with proactive insights and comprehensive summaries."""
         const val DEFAULT_OLLAMA_URL = "http://10.0.2.2:11434/api/chat"
     }
     
@@ -97,6 +107,10 @@ class SettingsRepository(private val context: Context) {
     val transcriptionLanguageFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[TRANSCRIPTION_LANGUAGE] ?: "en"
     }
+    
+    val isOnboardingCompleteFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[IS_ONBOARDING_COMPLETE] ?: false
+    }
 
     suspend fun updateSystemInstruction(instruction: String) {
         context.dataStore.edit { preferences ->
@@ -159,6 +173,12 @@ class SettingsRepository(private val context: Context) {
     suspend fun updateTranscriptionLanguage(lang: String) {
         context.dataStore.edit { preferences ->
             preferences[TRANSCRIPTION_LANGUAGE] = lang
+        }
+    }
+    
+    suspend fun completeOnboarding() {
+        context.dataStore.edit { preferences ->
+            preferences[IS_ONBOARDING_COMPLETE] = true
         }
     }
 }

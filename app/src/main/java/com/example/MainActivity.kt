@@ -32,6 +32,7 @@ import com.example.ui.theme.MyApplicationTheme
 
 import com.example.data.SettingsRepository
 import com.example.ai.EmbeddingEngine
+import com.example.ai.TTSEngine
 
 import com.example.ui.MainScreen
 
@@ -42,6 +43,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var viewModel: ChatViewModel
     private lateinit var workspaceViewModel: WorkspaceViewModel
     private lateinit var embeddingEngine: EmbeddingEngine
+    private lateinit var ttsEngine: TTSEngine
     private lateinit var memoryDao: com.example.data.MemoryFragmentDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,16 +59,20 @@ class MainActivity : ComponentActivity() {
             "mengine-encrypted-db"
         )
         .openHelperFactory(factory)
-        .fallbackToDestructiveMigration()
+        .fallbackToDestructiveMigration(true)
         .build()
         
         memoryDao = database.memoryFragmentDao()
         embeddingEngine = EmbeddingEngine(applicationContext)
+        ttsEngine = TTSEngine(applicationContext)
         
-        repository = ChatRepository(database.messageDao(), database.styleDao(), database.endpointDao())
+        repository = ChatRepository(database.messageDao(), database.styleDao(), database.endpointDao(), database.sessionDao())
         settingsRepository = SettingsRepository(applicationContext)
-        viewModel = ViewModelProvider(this, ChatViewModelFactory(repository, settingsRepository, memoryDao, embeddingEngine))[ChatViewModel::class.java]
-        workspaceViewModel = ViewModelProvider(this, WorkspaceViewModelFactory(database.workspaceDao(), settingsRepository))[WorkspaceViewModel::class.java]
+        val locationRepository = com.example.data.LocationRepository(applicationContext, database.locationDao())
+        val astroRepository = com.example.data.AstroNumerologyRepository(database.astroDao())
+        val localIntelligenceRepository = com.example.data.LocalIntelligenceRepository(applicationContext)
+        viewModel = ViewModelProvider(this, ChatViewModelFactory(locationRepository, astroRepository, localIntelligenceRepository, repository, settingsRepository, memoryDao, embeddingEngine, ttsEngine, applicationContext))[ChatViewModel::class.java]
+        workspaceViewModel = ViewModelProvider(this, WorkspaceViewModelFactory(applicationContext, database.workspaceDao(), settingsRepository))[WorkspaceViewModel::class.java]
 
         setContent {
             MyApplicationTheme {

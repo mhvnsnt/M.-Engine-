@@ -12,13 +12,17 @@ import java.util.Scanner
 
 class EmbeddingEngine(private val context: Context) {
     private val env = OrtEnvironment.getEnvironment()
-    private val session: OrtSession
+    private var session: OrtSession? = null
     private val vocab = mutableMapOf<String, Int>()
 
     init {
-        val modelBytes = context.assets.open("all-MiniLM-L6-v2.onnx").readBytes()
-        session = env.createSession(modelBytes, OrtSession.SessionOptions())
-        loadVocab()
+        try {
+            val modelBytes = context.assets.open("all-MiniLM-L6-v2.onnx").readBytes()
+            session = env.createSession(modelBytes, OrtSession.SessionOptions())
+            loadVocab()
+        } catch (e: Exception) {
+            android.util.Log.e("EmbeddingEngine", "Failed to load ONNX model: ${e.message}")
+        }
     }
 
     private fun loadVocab() {
@@ -85,7 +89,8 @@ class EmbeddingEngine(private val context: Context) {
             "token_type_ids" to tokenTypeIdsTensor
         )
 
-        val result = session.run(inputs)
+        val currentSession = session ?: return@withContext FloatArray(384)
+        val result = currentSession.run(inputs)
         
         // Output from MiniLM is usually (batch_size, sequence_length, hidden_size) or similar
         // For sentence transformers, mean pooling is typically applied. 

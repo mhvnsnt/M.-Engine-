@@ -1,6 +1,6 @@
 {
-  "name": "",
-  "description": "",
+  "name": "M. Engine",
+  "description": "An elegant, corporate-style AI wrapper with local memory, voice transcription, and GitHub workspace integration.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

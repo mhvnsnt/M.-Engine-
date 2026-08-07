@@ -5,9 +5,18 @@ import kotlinx.coroutines.flow.Flow
 class ChatRepository(
     private val messageDao: MessageDao,
     private val styleDao: StyleDao,
-    private val endpointDao: EndpointDao
+    private val endpointDao: EndpointDao,
+    private val sessionDao: SessionDao
 ) {
     val allMessages: Flow<List<MessageEntity>> = messageDao.getAllMessages()
+    val allSessions: Flow<List<SessionEntity>> = sessionDao.getAllSessions()
+    
+    fun getMessagesForSession(sessionId: Long): Flow<List<MessageEntity>> = messageDao.getMessagesForSession(sessionId)
+    
+    suspend fun insertSession(session: SessionEntity): Long = sessionDao.insertSession(session)
+    suspend fun updateSession(session: SessionEntity) = sessionDao.updateSession(session)
+    suspend fun deleteSession(id: Long) = sessionDao.deleteSession(id)
+
     val styleProfile: Flow<StyleProfileEntity?> = styleDao.getProfile()
     val allEndpoints: Flow<List<EndpointEntity>> = endpointDao.getAllEndpoints()
 

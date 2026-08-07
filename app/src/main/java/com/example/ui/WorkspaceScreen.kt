@@ -1,5 +1,11 @@
 package com.example.ui
 
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.AccountCircle
 
@@ -19,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -31,7 +39,7 @@ fun WorkspaceScreen(
     
     var showAddDialog by remember { mutableStateOf(false) }
     var selectedWorkspace by remember { mutableStateOf<com.example.data.WorkspaceEntity?>(null) }
-    var selectedFile by remember { mutableStateOf<com.example.data.FileEntity?>(null) }
+    val selectedFile by viewModel.selectedFile.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -91,7 +99,7 @@ fun WorkspaceScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth().clickable { 
                                     selectedWorkspace = workspace 
-                                    selectedFile = null
+                                    viewModel.selectFile(null)
                                 },
                                 colors = CardDefaults.cardColors(containerColor = if (selectedWorkspace?.id == workspace.id) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant)
                             ) {
@@ -116,7 +124,7 @@ fun WorkspaceScreen(
                         viewModel = viewModel, 
                         workspaceId = workspace.id,
                         selectedFile = selectedFile,
-                        onFileSelected = { selectedFile = it }
+                        onFileSelected = { viewModel.selectFile(it) }
                     )
                 }
             }
@@ -138,7 +146,7 @@ fun WorkspaceScreen(
                     CodeEditor(
                         file = selectedFile!!,
                         onContentChange = { newContent ->
-                            selectedFile = selectedFile!!.copy(content = newContent)
+                            
                             viewModel.updateFileContent(selectedFile!!.id, newContent)
                         }
                     )
@@ -217,23 +225,24 @@ fun FileTreeViewer(
     ) {
         items(files) { file ->
             val isSelected = selectedFile?.id == file.id
+            val isFolder = !file.filePath.contains(".")
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onFileSelected(file) }
-                    .padding(vertical = 4.dp)
+                    .padding(vertical = 6.dp, horizontal = 8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Default.Folder, 
+                    imageVector = if (isFolder) Icons.Default.Folder else Icons.Outlined.StarBorder, 
                     contentDescription = "File", 
                     modifier = Modifier.size(16.dp), 
-                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.7f)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = file.filePath, 
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
             }
@@ -242,26 +251,74 @@ fun FileTreeViewer(
 }
 
 @Composable
+
 fun CodeEditor(
     file: com.example.data.FileEntity,
     onContentChange: (String) -> Unit
 ) {
-    // Basic TextField for code editing with monospace font
-    TextField(
-        value = file.content,
-        onValueChange = onContentChange,
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp),
-        textStyle = TextStyle(
-            fontFamily = FontFamily.Monospace,
-            color = MaterialTheme.colorScheme.onSurface
-        ),
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.surface,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
+            .padding(8.dp)
+    ) {
+        BasicTextField(
+            value = file.content,
+            onValueChange = onContentChange,
+            modifier = Modifier.fillMaxSize(),
+            textStyle = TextStyle(
+                fontFamily = FontFamily.Monospace,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary),
+            visualTransformation = SyntaxHighlighter()
         )
-    )
+    }
 }
+
+
+class SyntaxHighlighter : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val inputText = text.text
+        val annotatedString = buildAnnotatedString {
+            append(inputText)
+            
+            // Keywords
+            val keywords = listOf("val ", "var ", "fun ", "class ", "interface ", "return ", "if ", "else ", "for ", "while ", "import ", "package ", "import\n")
+            keywords.forEach { keyword ->
+                var startIndex = inputText.indexOf(keyword)
+                while (startIndex >= 0) {
+                    addStyle(
+                        style = SpanStyle(color = Color(0xFFC678DD)), // Purple
+                        start = startIndex,
+                        end = startIndex + keyword.length
+                    )
+                    startIndex = inputText.indexOf(keyword, startIndex + keyword.length)
+                }
+            }
+            
+            // Strings
+            val stringRegex = "\".*?\"".toRegex()
+            stringRegex.findAll(inputText).forEach { matchResult ->
+                addStyle(
+                    style = SpanStyle(color = Color(0xFF98C379)), // Green
+                    start = matchResult.range.first,
+                    end = matchResult.range.last + 1
+                )
+            }
+            
+            // Comments
+            val commentRegex = "//.*".toRegex()
+            commentRegex.findAll(inputText).forEach { matchResult ->
+                addStyle(
+                    style = SpanStyle(color = Color(0xFF5C6370)), // Gray
+                    start = matchResult.range.first,
+                    end = matchResult.range.last + 1
+                )
+            }
+        }
+        return TransformedText(annotatedString, OffsetMapping.Identity)
+    }
+}
+

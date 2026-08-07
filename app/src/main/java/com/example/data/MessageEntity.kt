@@ -10,5 +10,7 @@ data class MessageEntity(
     val isUser: Boolean,
     val responderName: String? = null,
     val groupId: Long = 0L,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val sessionId: Long = 1L,
+    val imageUri: String? = null
 )

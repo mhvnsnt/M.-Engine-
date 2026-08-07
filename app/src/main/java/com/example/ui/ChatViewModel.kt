@@ -1,6 +1,15 @@
 package com.example.ui
 
 import androidx.lifecycle.ViewModel
+
+import android.net.Uri
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.ByteArrayOutputStream
+import android.util.Base64
+import com.example.network.OpenRouterMessage
+import com.example.network.OpenRouterContentPart
+import com.example.network.OpenRouterImageUrl
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.data.ChatRepository
@@ -21,6 +30,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.delay
 import com.example.network.DeviceCodeResponse
 import com.example.network.AccessTokenResponse
@@ -44,10 +54,16 @@ data class DeviceFlowState(
 )
 
 class ChatViewModel(
+    private val locationRepository: com.example.data.LocationRepository,
+    private val astroRepository: com.example.data.AstroNumerologyRepository,
+    private val localIntelligenceRepository: com.example.data.LocalIntelligenceRepository,
+
     private val repository: ChatRepository,
-    private val settingsRepository: SettingsRepository,
+    val settingsRepository: SettingsRepository,
     private val memoryDao: MemoryFragmentDao,
-    private val embeddingEngine: EmbeddingEngine
+    private val embeddingEngine: EmbeddingEngine,
+    private val ttsEngine: com.example.ai.TTSEngine,
+    private val context: android.content.Context
 ) : ViewModel() {
     val messages: StateFlow<List<MessageEntity>> = repository.allMessages.stateIn(
         scope = viewModelScope,
@@ -72,6 +88,8 @@ class ChatViewModel(
     
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    val workspaceContext = MutableStateFlow<String?>("")
 
     val systemInstruction: StateFlow<String> = settingsRepository.systemInstructionFlow.stateIn(
         scope = viewModelScope,
@@ -119,7 +137,7 @@ class ChatViewModel(
         viewModelScope.launch {
             if (repository.getEndpointCount() == 0) {
                 repository.insertEndpoint(EndpointEntity(
-                    name = "Local Ollama",
+                    name = "Local Ollama (Gemma)",
                     url = "http://10.0.2.2:11434/api/chat",
                     apiKey = "",
                     modelName = "gemma:2b",
@@ -128,12 +146,57 @@ class ChatViewModel(
                     isPrimary = true
                 ))
                 repository.insertEndpoint(EndpointEntity(
-                    name = "Groq (Llama 3)",
+                    name = "Local Ollama (Llama 3 Abliterated)",
+                    url = "http://10.0.2.2:11434/api/chat",
+                    apiKey = "",
+                    modelName = "llama3:8b-instruct-fp16",
+                    type = "OLLAMA",
+                    isActive = true,
+                    isPrimary = false
+                ))
+                repository.insertEndpoint(EndpointEntity(
+                    name = "Groq (Llama 3 8B)",
                     url = "https://api.groq.com/openai/v1/chat/completions",
                     apiKey = "",
                     modelName = "llama3-8b-8192",
                     type = "OPENAI",
-                    isActive = false,
+                    isActive = true,
+                    isPrimary = false
+                ))
+                repository.insertEndpoint(EndpointEntity(
+                    name = "Groq (Mixtral 8x7B)",
+                    url = "https://api.groq.com/openai/v1/chat/completions",
+                    apiKey = "",
+                    modelName = "mixtral-8x7b-32768",
+                    type = "OPENAI",
+                    isActive = true,
+                    isPrimary = false
+                ))
+                repository.insertEndpoint(EndpointEntity(
+                    name = "OpenRouter (Dolphin Llama 3 8B Uncensored)",
+                    url = "https://openrouter.ai/api/v1/chat/completions",
+                    apiKey = "",
+                    modelName = "cognitivecomputations/dolphin-llama-3-8b",
+                    type = "OPENAI",
+                    isActive = true,
+                    isPrimary = false
+                ))
+                repository.insertEndpoint(EndpointEntity(
+                    name = "OpenRouter (Hermes 3 8B Uncensored)",
+                    url = "https://openrouter.ai/api/v1/chat/completions",
+                    apiKey = "",
+                    modelName = "nousresearch/hermes-3-llama-3.1-8b",
+                    type = "OPENAI",
+                    isActive = true,
+                    isPrimary = false
+                ))
+                repository.insertEndpoint(EndpointEntity(
+                    name = "OpenRouter (Llama 3.1 8B Free)",
+                    url = "https://openrouter.ai/api/v1/chat/completions",
+                    apiKey = "",
+                    modelName = "meta-llama/llama-3.1-8b-instruct:free",
+                    type = "OPENAI",
+                    isActive = true,
                     isPrimary = false
                 ))
             }
@@ -264,7 +327,7 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(text: String) {
+    fun sendMessage(text: String, imageUri: String? = null) {
         if (text.isBlank()) return
         
         val currentInstruction = systemInstruction.value
@@ -276,7 +339,7 @@ class ChatViewModel(
             val groupId = System.currentTimeMillis()
             
             // Save user message and embed
-            val userMsg = MessageEntity(text = text, isUser = true, groupId = groupId)
+            val userMsg = MessageEntity(text = text, isUser = true, groupId = groupId, imageUri = imageUri)
             repository.insertMessage(userMsg)
             
             try {
@@ -330,7 +393,36 @@ class ChatViewModel(
                 "Adapt your response style to mirror their cadence and vocabulary. Maintain an identical tone."
             } else ""
 
-            val finalSystemInstruction = currentInstruction + profileContext + ragContext
+            val coreMemory = memoryDao.getFragmentsByType("CORE").joinToString("\n") { it.text }
+            val currentWorkspace = workspaceContext.value
+            
+            // Location and Constraints
+            val currentRegion = locationRepository.fetchCurrentLocationAndRegion()
+            val constraints = locationRepository.userConstraintsFlow.firstOrNull()
+            
+            var locationContext = ""
+            if (currentRegion != null) {
+                locationContext += "\n\n[REGION CONTEXT]\nActive Region: ${currentRegion.displayName}\nLocal Notes: ${currentRegion.localNotes}"
+            }
+            if (constraints != null) {
+                locationContext += "\n\n[USER CONSTRAINTS (HARD FILTERS)]\nBudget Mode: ${constraints.budgetMode}\nEntry Cost: ${constraints.entryCostFilter}\nRole: ${constraints.userRole}\nExcluded: ${constraints.excludedCategories}\nDo not suggest anything violating these constraints."
+            }
+            
+            // Astro Context
+            val astroProfile = astroRepository.astroProfileFlow.firstOrNull()
+            var astroContext = ""
+            if (astroProfile != null) {
+                astroContext += "\n\n[ASTRO & NUMEROLOGY BLUEPRINT]\nLife Path: ${astroProfile.lifePathNumber}, Expression: ${astroProfile.expressionNumber}\nPlacements: ${astroProfile.placementsJson}\n"
+                astroContext += astroRepository.getCurrentTransitsContext()
+            }
+            
+            var finalSystemInstruction = currentInstruction + profileContext + ragContext + locationContext + astroContext
+            if (coreMemory.isNotBlank()) {
+                finalSystemInstruction += "\n\n[CORE MEMORY]\n$coreMemory"
+            }
+            if (!currentWorkspace.isNullOrBlank()) {
+                finalSystemInstruction += "\n\n[CURRENT WORKSPACE FILE CONTEXT]\nThe user is currently viewing this file:\n```\n$currentWorkspace\n```"
+            }
             if (finalSystemInstruction.isNotBlank()) {
                 history.add(OllamaMessage(role = "system", content = finalSystemInstruction))
             }
@@ -367,7 +459,25 @@ class ChatViewModel(
     }
     
     private suspend fun streamOpenRouterModel(endpoint: EndpointEntity, history: List<OllamaMessage>, groupId: Long) {
-        val request = OpenRouterRequest(model = endpoint.modelName, messages = history, stream = true)
+        
+        val mappedMessages = history.map { msg ->
+            if (msg.imageUri != null) {
+                val base64 = getBase64FromUri(Uri.parse(msg.imageUri))
+                if (base64 != null) {
+                    val parts = listOf(
+                        OpenRouterContentPart(type = "text", text = msg.content),
+                        OpenRouterContentPart(type = "image_url", image_url = OpenRouterImageUrl(url = base64))
+                    )
+                    OpenRouterMessage(role = msg.role, content = parts)
+                } else {
+                    OpenRouterMessage(role = msg.role, content = msg.content)
+                }
+            } else {
+                OpenRouterMessage(role = msg.role, content = msg.content)
+            }
+        }
+        val request = OpenRouterRequest(model = endpoint.modelName, messages = mappedMessages, stream = true)
+
         val placeholderMsg = MessageEntity(text = "", isUser = false, responderName = endpoint.name, groupId = groupId)
         val insertedId = repository.insertMessage(placeholderMsg).toInt()
         
@@ -381,6 +491,7 @@ class ChatViewModel(
                 val reader = BufferedReader(InputStreamReader(response.byteStream()))
                 
                 var completeResponse = ""
+                var ttsBuffer = ""
                 var lastUpdateTime = System.currentTimeMillis()
                 var line: String?
                 while (reader.readLine().also { line = it } != null) {
@@ -392,6 +503,12 @@ class ChatViewModel(
                                 val chunk = openRouterResponseAdapter.fromJson(jsonLine)
                                 chunk?.choices?.firstOrNull()?.delta?.content?.let { contentChunk ->
                                     completeResponse += contentChunk
+                                    ttsBuffer += contentChunk
+                                    // Speak if we hit punctuation or a newline
+                                    if (ttsBuffer.contains(Regex("[.!?\n]")) || (ttsBuffer.contains(" ") && ttsBuffer.length > 30)) {
+                                        ttsEngine.speak(ttsBuffer, flush = false)
+                                        ttsBuffer = ""
+                                    }
                                     val now = System.currentTimeMillis()
                                     if (now - lastUpdateTime > 50) {
                                         repository.updateMessage(placeholderMsg.copy(id = insertedId, text = completeResponse))
@@ -424,6 +541,7 @@ class ChatViewModel(
                 val reader = BufferedReader(InputStreamReader(response.byteStream()))
                 
                 var completeResponse = ""
+                var ttsBuffer = ""
                 var lastUpdateTime = System.currentTimeMillis()
                 var line: String?
                 while (reader.readLine().also { line = it } != null) {
@@ -432,6 +550,11 @@ class ChatViewModel(
                             val chunk = responseAdapter.fromJson(jsonLine)
                             chunk?.message?.content?.let { contentChunk ->
                                 completeResponse += contentChunk
+                                ttsBuffer += contentChunk
+                                if (ttsBuffer.contains(Regex("[.!?\n]")) || (ttsBuffer.contains(" ") && ttsBuffer.length > 30)) {
+                                    ttsEngine.speak(ttsBuffer, flush = false)
+                                    ttsBuffer = ""
+                                }
                                 val now = System.currentTimeMillis()
                                 if (now - lastUpdateTime > 50 || chunk.done) {
                                     repository.updateMessage(placeholderMsg.copy(id = insertedId, text = completeResponse))
@@ -489,7 +612,7 @@ class ChatViewModel(
             // Include history up to the original user prompt for context
             val groupId = messages.first().groupId
             currentMessages.filter { it.groupId < groupId }.forEach { msg ->
-                history.add(OllamaMessage(role = if (msg.isUser) "user" else "assistant", content = msg.text))
+                history.add(OllamaMessage(role = if (msg.isUser) "user" else "assistant", content = msg.text, imageUri = msg.imageUri))
             }
             
             history.add(OllamaMessage(role = "user", content = prompt))
@@ -505,24 +628,70 @@ class ChatViewModel(
         }
     }
 
+    
+    private fun getBase64FromUri(uri: Uri): String? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+            val byteArray = outputStream.toByteArray()
+            "data:image/jpeg;base64," + Base64.encodeToString(byteArray, Base64.NO_WRAP)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
     fun clearMemory() {
         viewModelScope.launch {
             repository.clearMessages()
             repository.clearProfile()
+            memoryDao.deleteAllFragments()
+        }
+    }
+    
+    fun clearCoreMemory() {
+        viewModelScope.launch {
+            memoryDao.deleteFragmentsByType("CORE")
+        }
+    }
+
+    fun clearEpisodicMemory() {
+        viewModelScope.launch {
+            memoryDao.deleteFragmentsByType("EPISODIC")
+        }
+    }
+
+    fun clearAllRegionProfiles() {
+        viewModelScope.launch {
+            locationRepository.deleteAllRegions()
+        }
+    }
+    
+    fun clearLocationSnapshots() {
+        viewModelScope.launch {
+            locationRepository.deleteSnapshots()
         }
     }
 }
 
 class ChatViewModelFactory(
+    private val locationRepository: com.example.data.LocationRepository,
+    private val astroRepository: com.example.data.AstroNumerologyRepository,
+    private val localIntelligenceRepository: com.example.data.LocalIntelligenceRepository,
+
     private val repository: ChatRepository,
-    private val settingsRepository: SettingsRepository,
+    val settingsRepository: SettingsRepository,
     private val memoryDao: MemoryFragmentDao,
-    private val embeddingEngine: EmbeddingEngine
+    private val embeddingEngine: EmbeddingEngine,
+    private val ttsEngine: com.example.ai.TTSEngine,
+    private val context: android.content.Context
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ChatViewModel(repository, settingsRepository, memoryDao, embeddingEngine) as T
+            return ChatViewModel(locationRepository, astroRepository, localIntelligenceRepository, repository, settingsRepository, memoryDao, embeddingEngine, ttsEngine, context) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

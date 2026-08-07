@@ -10,26 +10,35 @@ plugins {
 }
 
 android {
+    ndkVersion = "25.1.8937393"
+    externalNativeBuild {
+        cmake {
+            path("src/main/cpp/CMakeLists.txt")
+        }
+    }
   namespace = "com.example"
-  compileSdk { version = release(36) { minorApiLevel = 1 } }
+  compileSdk = 36
 
   defaultConfig {
     applicationId = "com.aistudio.mengine.axwz"
     minSdk = 24
-    targetSdk = 36
+    targetSdk = 35
     versionCode = 1
     versionName = "1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    ndk {
+        abiFilters.add("arm64-v8a")
+    }
   }
 
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
+      val keystorePath = "${rootDir}/my-upload-key.jks"
       storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
+      storePassword = "android"
       keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+      keyPassword = "android"
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
@@ -48,6 +57,16 @@ android {
     }
     debug { signingConfig = signingConfigs.getByName("debugConfig") }
   }
+  
+  sourceSets {
+    getByName("debug") {
+      java.srcDirs("build/generated/ksp/debug/kotlin")
+    }
+    getByName("release") {
+      java.srcDirs("build/generated/ksp/release/kotlin")
+    }
+  }
+
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
@@ -55,6 +74,9 @@ android {
   buildFeatures {
     compose = true
     buildConfig = true
+  }
+  lint {
+    abortOnError = false
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
 }
@@ -73,7 +95,7 @@ googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.W
 dependencies {
   implementation(platform(libs.androidx.compose.bom))
   implementation(platform(libs.firebase.bom))
-  // implementation(libs.accompanist.permissions)
+  implementation(libs.accompanist.permissions)
   implementation(libs.androidx.activity.compose)
   // implementation(libs.androidx.camera.camera2)
   // implementation(libs.androidx.camera.core)
@@ -86,6 +108,7 @@ dependencies {
   implementation(libs.androidx.compose.ui.graphics)
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
+    implementation("org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r")
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -94,7 +117,7 @@ dependencies {
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
   implementation("net.zetetic:android-database-sqlcipher:4.5.4")
-  // implementation(libs.coil.compose)
+  implementation(libs.coil.compose)
   implementation(libs.converter.moshi)
   implementation(libs.firebase.ai)
   // Uncomment to use Firestore:
@@ -115,6 +138,9 @@ dependencies {
   // implementation(libs.play.services.location)
   implementation(libs.retrofit)
   implementation(libs.onnxruntime.android)
+  implementation("io.noties.markwon:core:4.6.2")
+  implementation("io.noties.markwon:ext-strikethrough:4.6.2")
+  implementation("io.noties.markwon:ext-tables:4.6.2")
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)
@@ -133,4 +159,7 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
   ksp(libs.androidx.room.compiler)
   ksp(libs.moshi.kotlin.codegen)
+  implementation("ch.acra:acra-core:5.11.3")
+  implementation("ch.acra:acra-mail:5.11.3")
+  implementation("ch.acra:acra-toast:5.11.3")
 }

@@ -1,4 +1,5 @@
 [versions]
+acra = "5.11.3"
 objectbox = "5.4.2"
 onnxruntime = "1.17.1"
 agp = "9.1.1"
@@ -46,6 +47,9 @@ googleid = "1.1.1"
 
 
 [libraries]
+acra-mail = { group = "ch.acra", name = "acra-mail", version.ref = "acra" }
+acra-toast = { group = "ch.acra", name = "acra-toast", version.ref = "acra" }
+acra-core = { group = "ch.acra", name = "acra-core", version.ref = "acra" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

@@ -9,5 +9,6 @@ data class MemoryFragment(
     var text: String = "",
     var timestamp: Long = 0,
     var isUser: Boolean = false,
-    var embedding: String = "" // JSON representation of FloatArray
+    var embedding: String = "", // JSON representation of FloatArray
+    var type: String = "ARCHIVAL" // CORE, ARCHIVAL, WORKSPACE
 )

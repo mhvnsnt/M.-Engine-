@@ -1,6 +1,7 @@
 package com.example.network
 
 import com.squareup.moshi.JsonClass
+import kotlin.jvm.Transient
 
 @JsonClass(generateAdapter = true)
 data class OllamaChatRequest(
@@ -12,7 +13,8 @@ data class OllamaChatRequest(
 @JsonClass(generateAdapter = true)
 data class OllamaMessage(
     val role: String,
-    val content: String
+    val content: String,
+    @Transient val imageUri: String? = null
 )
 
 @JsonClass(generateAdapter = true)
