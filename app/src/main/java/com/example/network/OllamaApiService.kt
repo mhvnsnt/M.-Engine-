@@ -12,5 +12,5 @@ interface OllamaApiService {
     suspend fun generateChatStream(
         @Url url: String,
         @Body request: OllamaChatRequest
-    ): ResponseBody
+    ): retrofit2.Response<ResponseBody>
 }

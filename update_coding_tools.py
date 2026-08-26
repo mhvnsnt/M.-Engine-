@@ -1,0 +1,224 @@
+content = """package com.example.ai
+
+import android.content.Context
+import android.util.Log
+import com.example.network.RetrofitClient
+import com.example.network.TelegramMessageRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
+
+class CodingTools(private val context: Context) {
+
+    private fun getRepoDir(owner: String, repo: String): File {
+        return File(context.filesDir, "repos/$owner/$repo")
+    }
+
+    suspend fun cloneOrPull(pat: String, owner: String, repo: String): String = withContext(Dispatchers.IO) {
+        val repoDir = getRepoDir(owner, repo)
+        val url = "https://github.com/$owner/$repo.git"
+        val credentials = UsernamePasswordCredentialsProvider(pat, "")
+        
+        try {
+            if (repoDir.exists() && File(repoDir, ".git").exists()) {
+                val git = Git.open(repoDir)
+                val pullResult = git.pull().setCredentialsProvider(credentials).call()
+                "Successfully pulled latest changes: ${pullResult.isSuccessful}"
+            } else {
+                repoDir.mkdirs()
+                Git.cloneRepository()
+                    .setURI(url)
+                    .setDirectory(repoDir)
+                    .setCredentialsProvider(credentials)
+                    .call()
+                "Successfully cloned repository."
+            }
+        } catch (e: Exception) {
+            Log.e("CodingTools", "Git error", e)
+            "Git Error: ${e.message}"
+        }
+    }
+
+    suspend fun listFiles(pat: String, owner: String, repo: String, branch: String = "main"): List<String> = withContext(Dispatchers.IO) {
+        val repoDir = getRepoDir(owner, repo)
+        if (!repoDir.exists()) {
+            cloneOrPull(pat, owner, repo)
+        }
+        
+        val files = mutableListOf<String>()
+        repoDir.walkTopDown().forEach { file ->
+            if (file.isFile && !file.absolutePath.contains("/.git/")) {
+                files.add(file.absolutePath.removePrefix(repoDir.absolutePath + "/"))
+            }
+        }
+        files
+    }
+
+    suspend fun readFile(pat: String, owner: String, repo: String, branch: String = "main", path: String): String? = withContext(Dispatchers.IO) {
+        val repoDir = getRepoDir(owner, repo)
+        if (!repoDir.exists()) {
+            cloneOrPull(pat, owner, repo)
+        }
+        val file = File(repoDir, path)
+        if (file.exists()) file.readText() else null
+    }
+
+    suspend fun writeFile(pat: String, owner: String, repo: String, path: String, content: String): Boolean = withContext(Dispatchers.IO) {
+        val repoDir = getRepoDir(owner, repo)
+        val file = File(repoDir, path)
+        try {
+            file.parentFile?.mkdirs()
+            file.writeText(content)
+            true
+        } catch(e: Exception) {
+            false
+        }
+    }
+
+    suspend fun commitAndPush(
+        pat: String, 
+        owner: String, 
+        repo: String, 
+        branch: String = "main", 
+        message: String, 
+        files: Map<String, String>? = null
+    ): Boolean = withContext(Dispatchers.IO) {
+        val repoDir = getRepoDir(owner, repo)
+        val credentials = UsernamePasswordCredentialsProvider(pat, "")
+        
+        try {
+            if (files != null) {                files.forEach { (path, content) ->
+                    writeFile(pat, owner, repo, path, content)
+                }
+            }
+            
+            val git = Git.open(repoDir)
+            git.add().addFilepattern(".").call()
+            git.commit().setMessage(message).setAuthor("CodeJarvis", "jarvis@mengine.ai").call()
+            git.push().setCredentialsProvider(credentials).call()
+            true
+        } catch (e: Exception) {
+            Log.e("CodingTools", "Git commit/push error", e)
+            false
+        }
+    }
+
+    suspend fun executeShell(command: String, cwd: File? = null): String = withContext(Dispatchers.IO) {
+        try {
+            val builder = ProcessBuilder("sh", "-c", command)
+            if (cwd != null && cwd.exists()) {
+                builder.directory(cwd)
+            }
+            val process = builder.start()
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            val errorReader = BufferedReader(InputStreamReader(process.errorStream))
+            var out = ""
+            var err = ""
+            var line: String?
+            while (reader.readLine().also { line = it } != null) { out += line + "\n" }
+            while (errorReader.readLine().also { line = it } != null) { err += line + "\n" }
+            val completed = process.waitFor(60, TimeUnit.SECONDS)
+            if (!completed) {
+                process.destroyForcibly()
+                return@withContext "Execution timed out (60s)."
+            }
+            "STDOUT:\n$out\nSTDERR:\n$err"
+        } catch (e: Exception) {
+            "Shell Execution Error: ${e.message}"
+        }
+    }
+
+    suspend fun executePython(pythonCode: String): String = withContext(Dispatchers.IO) {
+        try {
+            val scriptFile = File(context.cacheDir, "temp_script_${System.currentTimeMillis()}.py")
+            scriptFile.writeText(pythonCode)
+            
+            val builder = ProcessBuilder("python3", scriptFile.absolutePath)
+            val process = builder.start()
+            
+            val reader = BufferedReader(InputStreamReader(process.inputStream))
+            val errorReader = BufferedReader(InputStreamReader(process.errorStream))
+            var out = ""
+            var err = ""
+            var line: String?
+            while (reader.readLine().also { line = it } != null) { out += line + "\n" }
+            while (errorReader.readLine().also { line = it } != null) { err += line + "\n" }
+            
+            val completed = process.waitFor(30, TimeUnit.SECONDS)
+            scriptFile.delete()
+            
+            if (!completed) {
+                process.destroyForcibly()
+                return@withContext "Python Execution Timed Out (30s)."
+            }
+            "PYTHON STDOUT:\n$out${if (err.isNotBlank()) "\nPYTHON STDERR:\n$err" else ""}"
+        } catch (e: Exception) {
+            "Python Execution Error: ${e.message}"
+        }
+    }
+
+    suspend fun buildApk(): Pair<Boolean, String> = withContext(Dispatchers.IO) {
+        try {
+            val result = executeShell("gradle :app:assembleDebug")
+            val apkFile = File("app/build/outputs/apk/debug/app-debug.apk")
+            if (apkFile.exists()) {
+                val sizeMb = "%.2f".format(apkFile.length() / (1024.0 * 1024.0))
+                Pair(true, "APK Build Successful! Output file: ${apkFile.absolutePath} ($sizeMb MB)\n\n$result")
+            } else {
+                Pair(false, "APK Build Completed but app-debug.apk was not found.\n\n$result")
+            }
+        } catch (e: Exception) {
+            Pair(false, "APK Build Error: ${e.message}")
+        }
+    }
+
+    suspend fun deployApkToTelegram(token: String, chatId: Long, caption: String = "M Engine Build Artifact"): String = withContext(Dispatchers.IO) {
+        if (token.isEmpty()) return@withContext "Error: Telegram Bot Token is not configured."
+        
+        var apkFile = File("app/build/outputs/apk/debug/app-debug.apk")
+        if (!apkFile.exists()) {
+            val (built, buildLog) = buildApk()
+            if (!built) {
+                return@withContext "APK Build Failed during deployment:\n$buildLog"
+            }
+            apkFile = File("app/build/outputs/apk/debug/app-debug.apk")
+        }
+
+        try {
+            val chatIdBody = chatId.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+            val captionBody = caption.toRequestBody("text/plain".toMediaTypeOrNull())
+            val fileReq = apkFile.asRequestBody("application/vnd.android.package-archive".toMediaTypeOrNull())
+            val part = MultipartBody.Part.createFormData("document", apkFile.name, fileReq)
+
+            val response = RetrofitClient.telegramService.sendDocument(token, chatIdBody, part, captionBody)
+            if (response.ok) {
+                "Successfully uploaded and deployed APK (${apkFile.length() / 1024} KB) directly to Telegram Chat ID $chatId!"
+            } else {
+                "Telegram Document Upload returned non-ok status."
+            }
+        } catch (e: Exception) {
+            Log.e("CodingTools", "Failed Telegram document upload, attempting shell fallback", e)
+            // Fallback shell upload
+            val uploadRes = executeShell("curl -s -F \"chat_id=$chatId\" -F \"document=@app/build/outputs/apk/debug/app-debug.apk\" https://api.telegram.org/bot$token/sendDocument")
+            if (uploadRes.contains("\"ok\":true")) {
+                "Successfully deployed APK to Telegram via direct multipart request!"
+            } else {
+                "Error deploying APK to Telegram: ${e.message}\n$uploadRes"
+            }
+        }
+    }
+}
+"""
+
+with open("app/src/main/java/com/example/ai/CodingTools.kt", "w") as f:
+    f.write(content)
+print("Updated CodingTools.kt successfully")

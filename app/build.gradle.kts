@@ -34,11 +34,11 @@ android {
 
   signingConfigs {
     create("release") {
-      val keystorePath = "${rootDir}/my-upload-key.jks"
+      val keystorePath = "${rootDir}/release.keystore"
       storeFile = file(keystorePath)
-      storePassword = "android"
-      keyAlias = "upload"
-      keyPassword = "android"
+      storePassword = "mengine123"
+      keyAlias = "release"
+      keyPassword = "mengine123"
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
@@ -86,6 +86,7 @@ android {
 secrets {
   propertiesFileName = ".env"
   defaultPropertiesFileName = ".env.example"
+  
 }
 
 googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.WARN }
@@ -93,6 +94,7 @@ googleServices { missingGoogleServicesStrategy = MissingGoogleServicesStrategy.W
 // Some unused dependencies are commented out below instead of being removed.
 // This makes it easy to add them back in the future if needed.
 dependencies {
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
   implementation(platform(libs.androidx.compose.bom))
   implementation(platform(libs.firebase.bom))
   implementation(libs.accompanist.permissions)
@@ -109,6 +111,7 @@ dependencies {
   implementation(libs.androidx.compose.ui.tooling.preview)
   implementation(libs.androidx.core.ktx)
     implementation("org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r")
+  implementation("io.github.java-diff-utils:java-diff-utils:4.12")
   implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.lifecycle.runtime.compose)
   implementation(libs.androidx.lifecycle.runtime.ktx)

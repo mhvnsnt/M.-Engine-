@@ -16,7 +16,8 @@ data class OpenRouterResponse(
 
 @JsonClass(generateAdapter = true)
 data class OpenRouterChoice(
-    val delta: OpenRouterDelta? = null
+    val delta: OpenRouterDelta? = null,
+    val message: OpenRouterDelta? = null
 )
 
 @JsonClass(generateAdapter = true)

@@ -16,5 +16,5 @@ interface OpenRouterApiService {
         @Header("HTTP-Referer") referer: String = "https://aistudio.google.com",
         @Header("X-Title") title: String = "M. Engine",
         @Body request: OpenRouterRequest
-    ): ResponseBody
+    ): retrofit2.Response<ResponseBody>
 }

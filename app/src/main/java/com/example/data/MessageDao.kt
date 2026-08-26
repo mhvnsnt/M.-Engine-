@@ -19,6 +19,9 @@ interface MessageDao {
     @androidx.room.Update
     suspend fun updateMessage(message: MessageEntity)
     
+    @androidx.room.Delete
+    suspend fun deleteMessage(message: MessageEntity)
+    
     @Query("DELETE FROM messages")
     suspend fun clearMessages()
 }

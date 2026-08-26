@@ -17,8 +17,15 @@ class EmbeddingEngine(private val context: Context) {
 
     init {
         try {
-            val modelBytes = context.assets.open("all-MiniLM-L6-v2.onnx").readBytes()
-            session = env.createSession(modelBytes, OrtSession.SessionOptions())
+            val modelFile = java.io.File(context.cacheDir, "all-MiniLM-L6-v2.onnx")
+            if (!modelFile.exists()) {
+                context.assets.open("all-MiniLM-L6-v2.onnx").use { input ->
+                    java.io.FileOutputStream(modelFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+            }
+            session = env.createSession(modelFile.absolutePath, OrtSession.SessionOptions())
             loadVocab()
         } catch (e: Exception) {
             android.util.Log.e("EmbeddingEngine", "Failed to load ONNX model: ${e.message}")

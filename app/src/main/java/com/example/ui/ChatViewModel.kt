@@ -29,6 +29,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
+import com.example.ai.GithubMonitorWorker
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.delay
@@ -44,6 +48,9 @@ import java.io.InputStreamReader
 import com.example.ai.EmbeddingEngine
 import com.example.data.MemoryFragment
 import com.example.data.MemoryFragmentDao
+import com.example.github.HierarchicalMemoryManager
+import com.example.ai.CodeJarvis
+import com.example.ai.CodingTools
 
 
 data class DeviceFlowState(
@@ -61,10 +68,15 @@ class ChatViewModel(
     private val repository: ChatRepository,
     val settingsRepository: SettingsRepository,
     private val memoryDao: MemoryFragmentDao,
+    private val graphDao: com.example.data.GraphNodeDao,
     private val embeddingEngine: EmbeddingEngine,
     private val ttsEngine: com.example.ai.TTSEngine,
     private val context: android.content.Context
 ) : ViewModel() {
+
+    val memoryManager = HierarchicalMemoryManager(context, memoryDao, embeddingEngine)
+    val codingTools = CodingTools(context)
+    val codeJarvis = CodeJarvis(codingTools, com.example.ai.TreeSitterEngine(), graphDao)
     val messages: StateFlow<List<MessageEntity>> = repository.allMessages.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -105,7 +117,20 @@ class ChatViewModel(
     )
 
     private val _deviceFlowState = MutableStateFlow<DeviceFlowState?>(null)
+    private val _endpointStatuses = MutableStateFlow<Map<Int, String>>(emptyMap())
+    val endpointStatuses: StateFlow<Map<Int, String>> = _endpointStatuses
     val deviceFlowState: StateFlow<DeviceFlowState?> = _deviceFlowState
+
+    val autoSyncGithub: StateFlow<Boolean> = settingsRepository.autoSyncGithubFlow.stateIn(viewModelScope, SharingStarted.Lazily, false)
+    val pullMemoryOnStart: StateFlow<Boolean> = settingsRepository.pullMemoryOnStartFlow.stateIn(viewModelScope, SharingStarted.Lazily, false)
+    val telegramBotToken: StateFlow<String> = settingsRepository.telegramBotTokenFlow.stateIn(viewModelScope, SharingStarted.Lazily, "")
+    
+    fun updateTelegramBotToken(token: String) {
+        viewModelScope.launch {
+            settingsRepository.updateTelegramBotToken(token)
+        }
+    }
+    val councilMode: StateFlow<Boolean> = settingsRepository.councilModeFlow.stateIn(viewModelScope, SharingStarted.Lazily, false)
 
     val githubPat: StateFlow<String> = settingsRepository.githubPatFlow.stateIn(
         scope = viewModelScope,
@@ -133,9 +158,60 @@ class ChatViewModel(
     private val responseAdapter = moshi.adapter(OllamaChatResponse::class.java)
     private val openRouterResponseAdapter = moshi.adapter(OpenRouterResponse::class.java)
 
+
+    private val treeSitterEngine = com.example.ai.TreeSitterEngine()
+    private val reflectionEngine = com.example.ai.ReflectionEngine(memoryDao, graphDao, embeddingEngine, locationRepository)
+    private val lindyEngine = com.example.ai.LindyEngine(settingsRepository.telegramBotTokenFlow, codeJarvis, settingsRepository.githubPatFlow, codingTools)
+
     init {
+
+        reflectionEngine.startReflectionLoop()
+        lindyEngine.startProactiveLoop { getPrimaryEndpointSync() }
+        
+        // Start proactive GitHub Action monitoring (Lindy background trigger)
+        val workRequest = PeriodicWorkRequestBuilder<GithubMonitorWorker>(15, TimeUnit.MINUTES).build()
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "github_monitor",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+        // Load system prompt from github if needed
         viewModelScope.launch {
-            if (repository.getEndpointCount() == 0) {
+            if (pullMemoryOnStart.value) {
+                memoryManager.pullSystemPrompt(githubPat.value)
+            }
+            val prompt = memoryManager.getSystemPromptLocal()
+            if (!prompt.isNullOrBlank() && systemInstruction.value == com.example.data.SettingsRepository.DEFAULT_SYSTEM_INSTRUCTION) {
+                settingsRepository.updateSystemInstruction(prompt)
+            } else if (!prompt.isNullOrBlank() && pullMemoryOnStart.value) {
+                settingsRepository.updateSystemInstruction(prompt)
+            }
+        }
+
+        viewModelScope.launch {
+            val allEndpoints = repository.getAllEndpointsSync()
+            val hasPollinations = allEndpoints.any { it.url.contains("pollinations") }
+            if (!hasPollinations) {
+                // Ensure no other endpoints are primary
+                allEndpoints.forEach { 
+                    if (it.isPrimary) repository.updateEndpoint(it.copy(isPrimary = false))
+                }
+                repository.insertEndpoint(com.example.data.EndpointEntity(
+                    name = "Pollinations (GPT-OSS 20B)",
+                    url = "https://text.pollinations.ai/openai/chat/completions",
+                    apiKey = "", // No API key required!
+                    modelName = "openai-fast",
+                    type = "OPENAI",
+                    isActive = true,
+                    isPrimary = true
+                ))
+            } else {
+                // Fix existing Pollinations endpoints that use the old legacy "llama" model which now returns 404
+                allEndpoints.filter { it.url.contains("pollinations") && it.modelName == "llama" }.forEach {
+                    repository.updateEndpoint(it.copy(modelName = "openai-fast", name = "Pollinations (GPT-OSS 20B)"))
+                }
+            }
+            if (repository.getEndpointCount() <= 1) {
                 repository.insertEndpoint(EndpointEntity(
                     name = "Local Ollama (Gemma)",
                     url = "http://10.0.2.2:11434/api/chat",
@@ -143,7 +219,7 @@ class ChatViewModel(
                     modelName = "gemma:2b",
                     type = "OLLAMA",
                     isActive = true,
-                    isPrimary = true
+                    isPrimary = false
                 ))
                 repository.insertEndpoint(EndpointEntity(
                     name = "Local Ollama (Llama 3 Abliterated)",
@@ -189,6 +265,15 @@ class ChatViewModel(
                     type = "OPENAI",
                     isActive = true,
                     isPrimary = false
+                ))
+                repository.insertEndpoint(EndpointEntity(
+                    name = "Google Gemini (Gemini 2.5 Flash Free)",
+                    url = "https://openrouter.ai/api/v1/chat/completions",
+                    apiKey = "",
+                    modelName = "google/gemini-2.5-flash:free",
+                    type = "OPENAI",
+                    isActive = true,
+                    isPrimary = true
                 ))
                 repository.insertEndpoint(EndpointEntity(
                     name = "OpenRouter (Llama 3.1 8B Free)",
@@ -276,6 +361,17 @@ class ChatViewModel(
         _deviceFlowState.value = null
     }
 
+        fun updateAutoSyncGithub(value: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.updateAutoSyncGithub(value)
+        }
+    }
+    fun updatePullMemoryOnStart(value: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.updatePullMemoryOnStart(value)
+        }
+    }
+
     fun updateGithubPat(pat: String) {
         viewModelScope.launch {
             settingsRepository.updateGithubPat(pat)
@@ -312,6 +408,12 @@ class ChatViewModel(
         }
     }
 
+    fun updateEndpointApiKey(id: Int, apiKey: String) {
+        viewModelScope.launch {
+            repository.updateEndpointApiKey(id, apiKey)
+        }
+    }
+
     fun deleteEndpoint(endpoint: EndpointEntity) {
         viewModelScope.launch {
             repository.deleteEndpoint(endpoint)
@@ -339,6 +441,31 @@ class ChatViewModel(
             val groupId = System.currentTimeMillis()
             
             // Save user message and embed
+            
+            if (text.startsWith("/code ")) {
+                val command = text.removePrefix("/code ").trim()
+                val responseMsg = MessageEntity(text = "Executing CodeJarvis...", isUser = false, responderName = "CodeJarvis", groupId = groupId)
+                val insertedId = repository.insertMessage(responseMsg).toInt()
+                
+                try {
+                    val primaryEndpoint = repository.getPrimaryEndpoint()
+                    if (primaryEndpoint != null) {
+                        val result = codeJarvis.handleCodeCommand(
+                            command = command,
+                            githubPat = githubPat.value,
+                            endpoint = primaryEndpoint
+                        )
+                        repository.updateMessage(responseMsg.copy(id = insertedId, text = result))
+                    } else {
+                        repository.updateMessage(responseMsg.copy(id = insertedId, text = "Error: No primary endpoint selected for CodeJarvis."))
+                    }
+                } catch(e: Exception) {
+                    repository.updateMessage(responseMsg.copy(id = insertedId, text = "CodeJarvis Error: ${e.message}"))
+                }
+                syncMemory()
+                return@launch
+            }
+
             val userMsg = MessageEntity(text = text, isUser = true, groupId = groupId, imageUri = imageUri)
             repository.insertMessage(userMsg)
             
@@ -435,30 +562,75 @@ class ChatViewModel(
             val activeEndpoints = repository.getActiveEndpoints()
             if (activeEndpoints.isEmpty()) {
                 _errorMessage.value = "No active endpoints found."
-                _isGenerating.value = false
+                syncMemory()
                 return@launch
             }
             
-            val jobs = activeEndpoints.map { endpoint ->
-                async {
-                    if (endpoint.type == "OLLAMA") {
-                        streamOllamaModel(endpoint, history, groupId)
-                    } else {
-                        streamOpenRouterModel(endpoint, history, groupId)
+            if (councilMode.value) {
+                val jobs = activeEndpoints.map { endpoint ->
+                    async {
+                        if (endpoint.type == "OLLAMA") {
+                            streamOllamaModel(endpoint = endpoint, history = history, groupId = groupId, isLastFallback = true)
+                        } else {
+                            streamOpenRouterModel(endpoint = endpoint, history = history, groupId = groupId, isLastFallback = true)
+                        }
                     }
                 }
-            }
-            try {
-                jobs.awaitAll()
-            } catch (e: Exception) {
-                _errorMessage.value = "Council Error: ${e.message}"
+                try {
+                    jobs.awaitAll()
+                } catch (e: Exception) {
+                    _errorMessage.value = "Council Error: ${e.message}"
+                }
+            } else {
+                // Unified Smart Auto-Router Mode
+                val sortedEndpoints = activeEndpoints.sortedByDescending { it.isPrimary }
+                var success = false
+                var lastError: String? = null
+                
+                for (i in sortedEndpoints.indices) {
+                    val endpoint = sortedEndpoints[i]
+                    val isLastFallback = (i == sortedEndpoints.size - 1)
+                    val isSuccess = if (endpoint.type == "OLLAMA") {
+                        streamOllamaModel(
+                            endpoint = endpoint,
+                            history = history,
+                            groupId = groupId,
+                            isLastFallback = isLastFallback,
+                            onError = { lastError = it }
+                        )
+                    } else {
+                        streamOpenRouterModel(
+                            endpoint = endpoint,
+                            history = history,
+                            groupId = groupId,
+                            isLastFallback = isLastFallback,
+                            onError = { lastError = it }
+                        )
+                    }
+                    if (isSuccess) {
+                        success = true
+                        break
+                    } else {
+                        android.util.Log.w("ChatViewModel", "Endpoint ${endpoint.name} failed, falling back...")
+                    }
+                }
+                
+                if (!success) {
+                    _errorMessage.value = "All active endpoints failed. Last error: $lastError"
+                }
             }
             
-            _isGenerating.value = false
+            syncMemory()
         }
     }
     
-    private suspend fun streamOpenRouterModel(endpoint: EndpointEntity, history: List<OllamaMessage>, groupId: Long) {
+    private suspend fun streamOpenRouterModel(
+        endpoint: EndpointEntity,
+        history: List<OllamaMessage>,
+        groupId: Long,
+        isLastFallback: Boolean = true,
+        onError: (String) -> Unit = {}
+    ): Boolean {
         
         val mappedMessages = history.map { msg ->
             if (msg.imageUri != null) {
@@ -476,46 +648,81 @@ class ChatViewModel(
                 OpenRouterMessage(role = msg.role, content = msg.content)
             }
         }
-        val request = OpenRouterRequest(model = endpoint.modelName, messages = mappedMessages, stream = true)
+        val request = OpenRouterRequest(model = endpoint.modelName, messages = mappedMessages, stream = !endpoint.url.contains("pollinations"))
 
         val placeholderMsg = MessageEntity(text = "", isUser = false, responderName = endpoint.name, groupId = groupId)
         val insertedId = repository.insertMessage(placeholderMsg).toInt()
         
         withContext(Dispatchers.IO) {
+            var completeResponse = ""
             try {
-                val response = RetrofitClient.openRouterService.generateChatStream(
-                    url = endpoint.url,
-                    authHeader = "Bearer ${endpoint.apiKey}",
-                    request = request
-                )
-                val reader = BufferedReader(InputStreamReader(response.byteStream()))
-                
-                var completeResponse = ""
-                var ttsBuffer = ""
-                var lastUpdateTime = System.currentTimeMillis()
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    line?.let { rawLine ->
-                        if (rawLine.startsWith("data: ")) {
-                            val jsonLine = rawLine.substring(6)
-                            if (jsonLine == "[DONE]") return@let
-                            try {
-                                val chunk = openRouterResponseAdapter.fromJson(jsonLine)
-                                chunk?.choices?.firstOrNull()?.delta?.content?.let { contentChunk ->
-                                    completeResponse += contentChunk
-                                    ttsBuffer += contentChunk
-                                    // Speak if we hit punctuation or a newline
-                                    if (ttsBuffer.contains(Regex("[.!?\n]")) || (ttsBuffer.contains(" ") && ttsBuffer.length > 30)) {
-                                        ttsEngine.speak(ttsBuffer, flush = false)
-                                        ttsBuffer = ""
+                var response: okhttp3.ResponseBody? = null
+                var attempt = 0
+                val maxRetries = 3
+                while (attempt < maxRetries) {
+                    try {
+                        val retrofitResponse = RetrofitClient.openRouterService.generateChatStream(
+                            url = endpoint.url,
+                            authHeader = "Bearer ${endpoint.apiKey}",
+                            request = request
+                        )
+                        if (!retrofitResponse.isSuccessful) {
+                            throw Exception("HTTP ${retrofitResponse.code()}: ${retrofitResponse.errorBody()?.string()}")
+                        }
+                        response = retrofitResponse.body()
+                        break
+                    } catch (e: Exception) {
+                        attempt++
+                        android.util.Log.e("ChatViewModel", "OpenRouter connection attempt $attempt failed for ${endpoint.url}: ${e.message}")
+                        if (attempt >= maxRetries) throw e
+                        kotlinx.coroutines.delay(1000L * attempt)
+                    }
+                }
+                if (response == null) throw Exception("Failed to connect after $maxRetries attempts")
+
+                if (!request.stream) {
+                    val fullResponse = response!!.string()
+                    try {
+                        val chunk = openRouterResponseAdapter.fromJson(fullResponse)
+                        val choice = chunk?.choices?.firstOrNull()
+                        val contentChunk = choice?.delta?.content ?: choice?.message?.content
+                        if (contentChunk != null) {
+                            completeResponse += contentChunk
+                            ttsEngine.speak(contentChunk, flush = false)
+                            repository.updateMessage(placeholderMsg.copy(id = insertedId, text = completeResponse))
+                        }
+                    } catch (e: Exception) {
+                        throw Exception("Failed to parse non-streaming response: ${e.message}")
+                    }
+                } else {
+                    val reader = BufferedReader(InputStreamReader(response!!.byteStream()))
+                    
+                    var ttsBuffer = ""
+                    var lastUpdateTime = System.currentTimeMillis()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        line?.let { rawLine ->
+                            if (rawLine.startsWith("data: ")) {
+                                val jsonLine = rawLine.substring(6)
+                                if (jsonLine == "[DONE]") return@let
+                                try {
+                                    val chunk = openRouterResponseAdapter.fromJson(jsonLine)
+                                    chunk?.choices?.firstOrNull()?.delta?.content?.let { contentChunk ->
+                                        completeResponse += contentChunk
+                                        ttsBuffer += contentChunk
+                                        // Speak if we hit punctuation or a newline
+                                        if (ttsBuffer.contains(Regex("[.!?\n]")) || (ttsBuffer.contains(" ") && ttsBuffer.length > 30)) {
+                                            ttsEngine.speak(ttsBuffer, flush = false)
+                                            ttsBuffer = ""
+                                        }
+                                        val now = System.currentTimeMillis()
+                                        if (now - lastUpdateTime > 50) {
+                                            repository.updateMessage(placeholderMsg.copy(id = insertedId, text = completeResponse))
+                                            lastUpdateTime = now
+                                        }
                                     }
-                                    val now = System.currentTimeMillis()
-                                    if (now - lastUpdateTime > 50) {
-                                        repository.updateMessage(placeholderMsg.copy(id = insertedId, text = completeResponse))
-                                        lastUpdateTime = now
-                                    }
-                                }
-                            } catch (e: Exception) { }
+                                } catch (e: Exception) { }
+                            }
                         }
                     }
                 }
@@ -524,23 +731,70 @@ class ChatViewModel(
                     val embedding = embeddingEngine.generateEmbedding(completeResponse)
                     memoryDao.insert(MemoryFragment(text = completeResponse, timestamp = groupId, isUser = false, embedding = embedding.joinToString(",")))
                 } catch (e: Exception) { e.printStackTrace() }
+                _endpointStatuses.value = _endpointStatuses.value.toMutableMap().apply { put(endpoint.id, "Working (Last OK: ${java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))})") }
+                return@withContext true
             } catch (e: Exception) {
-                repository.updateMessage(placeholderMsg.copy(id = insertedId, text = "Error: ${e.message}"))
+                if (completeResponse.isNotBlank()) {
+                    android.util.Log.e("ChatViewModel", "Stream interrupted but keeping partial response: ${e.message}")
+                    repository.updateMessage(placeholderMsg.copy(id = insertedId, text = completeResponse))
+                    try {
+                        val embedding = embeddingEngine.generateEmbedding(completeResponse)
+                        memoryDao.insert(MemoryFragment(text = completeResponse, timestamp = groupId, isUser = false, embedding = embedding.joinToString(",")))
+                    } catch (ex: Exception) { ex.printStackTrace() }
+                    _endpointStatuses.value = _endpointStatuses.value.toMutableMap().apply { put(endpoint.id, "Working (Interrupted OK)") }
+                    return@withContext true
+                }
+
+                val errorMsg = e.message ?: "Unknown Error"
+                onError(errorMsg)
+                _endpointStatuses.value = _endpointStatuses.value.toMutableMap().apply { put(endpoint.id, "Error: $errorMsg") }
+                if (isLastFallback) {
+                    repository.updateMessage(placeholderMsg.copy(id = insertedId, text = "Error: $errorMsg"))
+                } else {
+                    repository.deleteMessage(placeholderMsg.copy(id = insertedId))
+                }
+                return@withContext false
             }
         }
+        return false // Fallback
     }
     
-    private suspend fun streamOllamaModel(endpoint: EndpointEntity, history: List<OllamaMessage>, groupId: Long) {
+    private suspend fun streamOllamaModel(
+        endpoint: EndpointEntity,
+        history: List<OllamaMessage>,
+        groupId: Long,
+        isLastFallback: Boolean = true,
+        onError: (String) -> Unit = {}
+    ): Boolean {
         val request = OllamaChatRequest(model = endpoint.modelName, messages = history, stream = true)
         val placeholderMsg = MessageEntity(text = "", isUser = false, responderName = endpoint.name, groupId = groupId)
         val insertedId = repository.insertMessage(placeholderMsg).toInt()
         
         withContext(Dispatchers.IO) {
+            var completeResponse = ""
             try {
-                val response = RetrofitClient.service.generateChatStream(endpoint.url, request)
-                val reader = BufferedReader(InputStreamReader(response.byteStream()))
+                var response: okhttp3.ResponseBody? = null
+                var attempt = 0
+                val maxRetries = 3
+                while (attempt < maxRetries) {
+                    try {
+                        val retrofitResponse = RetrofitClient.service.generateChatStream(endpoint.url, request)
+                        if (!retrofitResponse.isSuccessful) {
+                            throw Exception("HTTP ${retrofitResponse.code()}: ${retrofitResponse.errorBody()?.string()}")
+                        }
+                        response = retrofitResponse.body()
+                        break
+                    } catch (e: Exception) {
+                        attempt++
+                        android.util.Log.e("ChatViewModel", "Ollama connection attempt $attempt failed for ${endpoint.url}: ${e.message}")
+                        if (attempt >= maxRetries) throw e
+                        kotlinx.coroutines.delay(1000L * attempt)
+                    }
+                }
+                if (response == null) throw Exception("Failed to connect after $maxRetries attempts")
+
+                val reader = BufferedReader(InputStreamReader(response!!.byteStream()))
                 
-                var completeResponse = ""
                 var ttsBuffer = ""
                 var lastUpdateTime = System.currentTimeMillis()
                 var line: String?
@@ -569,10 +823,36 @@ class ChatViewModel(
                     val embedding = embeddingEngine.generateEmbedding(completeResponse)
                     memoryDao.insert(MemoryFragment(text = completeResponse, timestamp = groupId, isUser = false, embedding = embedding.joinToString(",")))
                 } catch (e: Exception) { e.printStackTrace() }
+                _endpointStatuses.value = _endpointStatuses.value.toMutableMap().apply { put(endpoint.id, "Working (Last OK: ${java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))})") }
+                return@withContext true
             } catch (e: Exception) {
-                repository.updateMessage(placeholderMsg.copy(id = insertedId, text = "Network Error: ${e.message}"))
+                if (completeResponse.isNotBlank()) {
+                    android.util.Log.e("ChatViewModel", "Stream interrupted but keeping partial response: ${e.message}")
+                    repository.updateMessage(placeholderMsg.copy(id = insertedId, text = completeResponse))
+                    try {
+                        val embedding = embeddingEngine.generateEmbedding(completeResponse)
+                        memoryDao.insert(MemoryFragment(text = completeResponse, timestamp = groupId, isUser = false, embedding = embedding.joinToString(",")))
+                    } catch (ex: Exception) { ex.printStackTrace() }
+                    _endpointStatuses.value = _endpointStatuses.value.toMutableMap().apply { put(endpoint.id, "Working (Interrupted OK)") }
+                    return@withContext true
+                }
+
+                val errorMsg = e.message ?: "Unknown Error"
+                onError(errorMsg)
+                _endpointStatuses.value = _endpointStatuses.value.toMutableMap().apply { put(endpoint.id, "Error: $errorMsg") }
+                var detailedErrorMsg = errorMsg
+                if (endpoint.url.contains("10.0.2.2")) {
+                    detailedErrorMsg += "\n\n(Fix: 10.0.2.2 only works in the Android Emulator. If you are on a real phone, go to Settings and change the URL to your computer's actual Wi-Fi IP address like 192.168.1.x, and ensure OLLAMA_HOST=0.0.0.0 is set on your PC before starting Ollama.)"
+                }
+                if (isLastFallback) {
+                    repository.updateMessage(placeholderMsg.copy(id = insertedId, text = "Network Error: $detailedErrorMsg"))
+                } else {
+                    repository.deleteMessage(placeholderMsg.copy(id = insertedId))
+                }
+                return@withContext false
             }
         }
+        return false // Fallback
     }
     
     fun synthesizeCouncilOutputs(messages: List<MessageEntity>) {
@@ -588,7 +868,7 @@ class ChatViewModel(
             val primary = repository.getPrimaryEndpoint()
             if (primary == null) {
                 _errorMessage.value = "No primary endpoint selected for synthesis."
-                _isGenerating.value = false
+                syncMemory()
                 return@launch
             }
             
@@ -619,12 +899,12 @@ class ChatViewModel(
             
             val newGroupId = System.currentTimeMillis()
             if (primary.type == "OLLAMA") {
-                streamOllamaModel(primary, history, newGroupId)
+                streamOllamaModel(endpoint = primary, history = history, groupId = newGroupId, isLastFallback = true)
             } else {
-                streamOpenRouterModel(primary, history, newGroupId)
+                streamOpenRouterModel(endpoint = primary, history = history, groupId = newGroupId, isLastFallback = true)
             }
             
-            _isGenerating.value = false
+            syncMemory()
         }
     }
 
@@ -669,10 +949,25 @@ class ChatViewModel(
         }
     }
     
+    private fun syncMemory() {
+        _isGenerating.value = false
+        viewModelScope.launch {
+            val msgs = messages.value
+            memoryManager.saveEpisodicMemory(System.currentTimeMillis(), msgs)
+            if (autoSyncGithub.value) {
+                memoryManager.syncSessionToGithub(githubPat.value, System.currentTimeMillis(), msgs)
+            }
+        }
+    }
+
     fun clearLocationSnapshots() {
         viewModelScope.launch {
             locationRepository.deleteSnapshots()
         }
+    }
+    suspend fun getPrimaryEndpointSync(): com.example.data.EndpointEntity? {
+        val active = repository.getActiveEndpoints()
+        return active.find { it.isPrimary } ?: active.firstOrNull()
     }
 }
 
@@ -684,6 +979,7 @@ class ChatViewModelFactory(
     private val repository: ChatRepository,
     val settingsRepository: SettingsRepository,
     private val memoryDao: MemoryFragmentDao,
+    private val graphDao: com.example.data.GraphNodeDao,
     private val embeddingEngine: EmbeddingEngine,
     private val ttsEngine: com.example.ai.TTSEngine,
     private val context: android.content.Context
@@ -691,8 +987,8 @@ class ChatViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ChatViewModel(locationRepository, astroRepository, localIntelligenceRepository, repository, settingsRepository, memoryDao, embeddingEngine, ttsEngine, context) as T
+            return ChatViewModel(locationRepository, astroRepository, localIntelligenceRepository, repository, settingsRepository, memoryDao, graphDao, embeddingEngine, ttsEngine, context) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
-}
+    }

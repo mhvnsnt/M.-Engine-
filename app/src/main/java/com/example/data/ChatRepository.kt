@@ -21,7 +21,9 @@ class ChatRepository(
     val allEndpoints: Flow<List<EndpointEntity>> = endpointDao.getAllEndpoints()
 
     suspend fun getActiveEndpoints() = endpointDao.getActiveEndpoints()
+    suspend fun getAllEndpointsSync() = endpointDao.getAllEndpointsSync()
     suspend fun getPrimaryEndpoint() = endpointDao.getPrimaryEndpoint()
+    suspend fun updateEndpointApiKey(id: Int, apiKey: String) = endpointDao.updateApiKey(id, apiKey)
     suspend fun insertEndpoint(endpoint: EndpointEntity) = endpointDao.insertEndpoint(endpoint)
     suspend fun updateEndpoint(endpoint: EndpointEntity) = endpointDao.updateEndpoint(endpoint)
     suspend fun deleteEndpoint(endpoint: EndpointEntity) = endpointDao.deleteEndpoint(endpoint)
@@ -30,6 +32,8 @@ class ChatRepository(
     suspend fun insertMessage(message: MessageEntity): Long = messageDao.insertMessage(message)
     
     suspend fun updateMessage(message: MessageEntity) = messageDao.updateMessage(message)
+    
+    suspend fun deleteMessage(message: MessageEntity) = messageDao.deleteMessage(message)
     
     suspend fun clearMessages() = messageDao.clearMessages()
 

@@ -48,6 +48,15 @@ object RetrofitClient {
             .build()
             .create(GitHubApiService::class.java)
     }
+    
+    val telegramService: TelegramApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://api.telegram.org/")
+            .client(okHttpClient)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(TelegramApiService::class.java)
+    }
     val githubAuthService: GitHubAuthService by lazy {
         Retrofit.Builder()
             .baseUrl("https://github.com/")

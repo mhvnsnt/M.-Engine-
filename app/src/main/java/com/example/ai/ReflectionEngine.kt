@@ -8,8 +8,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import android.util.Log
 
+import com.example.data.GraphNode
+import com.example.data.GraphNodeDao
+
 class ReflectionEngine(
     private val memoryDao: MemoryFragmentDao,
+    private val graphDao: GraphNodeDao,
     private val embeddingEngine: EmbeddingEngine,
     private val locationRepository: com.example.data.LocationRepository? = null
 ) {
@@ -39,7 +43,17 @@ class ReflectionEngine(
             }
         
             // Simplified logic: periodically summarize into CORE memory
+            // Letta / Cognee Graph memory logic
             val summary = "User demonstrates preference for local tooling (Tree-sitter, JGit) and performance (Llama.cpp on mobile GPU). Expects offline-first reasoning and semantic AST awareness."
+            
+            val node = GraphNode(
+                subject = "User",
+                predicate = "prefers",
+                obj = "local tooling and offline-first reasoning",
+                type = "CORE"
+            )
+            graphDao.insert(node)
+
             val embedding = embeddingEngine.generateEmbedding(summary)
             memoryDao.insert(
                 MemoryFragment(

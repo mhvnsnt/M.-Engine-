@@ -9,17 +9,21 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import com.example.BuildConfig
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "mengine_settings")
 
 class SettingsRepository(private val context: Context) {
     
     companion object {
+        val TELEGRAM_BOT_TOKEN = stringPreferencesKey("telegram_bot_token")
         val SYSTEM_INSTRUCTION = stringPreferencesKey("system_instruction")
         val OLLAMA_URL = stringPreferencesKey("ollama_url_encrypted")
         val OPENROUTER_KEY = stringPreferencesKey("openrouter_key_encrypted")
         val GITHUB_PAT = stringPreferencesKey("github_pat_encrypted")
         val GITHUB_CLIENT_ID = stringPreferencesKey("github_client_id")
+        val AUTO_SYNC_GITHUB = booleanPreferencesKey("auto_sync_github")
+        val PULL_MEMORY_ON_START = booleanPreferencesKey("pull_memory_on_start")
         val USE_OPENROUTER = booleanPreferencesKey("use_openrouter")
         val COUNCIL_MODE = booleanPreferencesKey("council_mode")
         val USE_WHISPER_MODEL = booleanPreferencesKey("use_whisper_model")
@@ -57,6 +61,16 @@ Your goal is not just to answer questions, but to drive projects forward with pr
         }
     }
 
+        val telegramBotTokenFlow = context.dataStore.data.map { preferences ->
+        preferences[TELEGRAM_BOT_TOKEN] ?: ""
+    }
+    
+    suspend fun updateTelegramBotToken(token: String) {
+        context.dataStore.edit { preferences ->
+            preferences[TELEGRAM_BOT_TOKEN] = token
+        }
+    }
+    
     val openRouterKeyFlow: Flow<String> = context.dataStore.data.map { preferences ->
         val encryptedKey = preferences[OPENROUTER_KEY]
         if (encryptedKey != null) {
@@ -75,9 +89,12 @@ Your goal is not just to answer questions, but to drive projects forward with pr
         preferences[GITHUB_CLIENT_ID] ?: ""
     }
 
+    val autoSyncGithubFlow: Flow<Boolean> = context.dataStore.data.map { it[AUTO_SYNC_GITHUB] ?: false }
+    val pullMemoryOnStartFlow: Flow<Boolean> = context.dataStore.data.map { it[PULL_MEMORY_ON_START] ?: false }
+
     val githubPatFlow: Flow<String> = context.dataStore.data.map { preferences ->
         val encryptedKey = preferences[GITHUB_PAT]
-        if (encryptedKey != null) {
+        val localKey = if (encryptedKey != null) {
             try {
                 String(CryptoManager.decrypt(encryptedKey))
             } catch (e: Exception) {
@@ -86,6 +103,8 @@ Your goal is not just to answer questions, but to drive projects forward with pr
         } else {
             ""
         }
+        
+        localKey
     }
     
     val useOpenRouterFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -136,6 +155,18 @@ Your goal is not just to answer questions, but to drive projects forward with pr
     suspend fun updateGithubClientId(clientId: String) {
         context.dataStore.edit { preferences ->
             preferences[GITHUB_CLIENT_ID] = clientId
+        }
+    }
+
+        suspend fun updateAutoSyncGithub(value: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[AUTO_SYNC_GITHUB] = value
+        }
+    }
+    
+    suspend fun updatePullMemoryOnStart(value: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[PULL_MEMORY_ON_START] = value
         }
     }
 

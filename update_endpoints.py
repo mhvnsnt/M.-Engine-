@@ -1,90 +1,37 @@
 with open("app/src/main/java/com/example/ui/ChatViewModel.kt", "r") as f:
     content = f.read()
 
-target = """            if (repository.getEndpointCount() == 0) {
-                repository.insertEndpoint(EndpointEntity(
-                    name = "Local Ollama",
-                    url = "http://10.0.2.2:11434/api/chat",
+target = """            val hasGemini = allEndpoints.any { it.modelName == "google/gemini-2.5-flash:free" }
+            if (!hasGemini) {
+                // Ensure no other endpoints are primary
+                allEndpoints.forEach { 
+                    if (it.isPrimary) repository.updateEndpoint(it.copy(isPrimary = false))
+                }
+                repository.insertEndpoint(com.example.data.EndpointEntity(
+                    name = "Google Gemini (Gemini 2.5 Flash Free)",
+                    url = "https://openrouter.ai/api/v1/chat/completions",
                     apiKey = "",
-                    modelName = "gemma:2b",
-                    type = "OLLAMA",
+                    modelName = "google/gemini-2.5-flash:free",
+                    type = "OPENAI",
                     isActive = true,
                     isPrimary = true
-                ))
-                repository.insertEndpoint(EndpointEntity(
-                    name = "Groq (Llama 3)",
-                    url = "https://api.groq.com/openai/v1/chat/completions",
-                    apiKey = "",
-                    modelName = "llama3-8b-8192",
-                    type = "OPENAI",
-                    isActive = false,
-                    isPrimary = false
                 ))
             }"""
 
-replacement = """            if (repository.getEndpointCount() == 0) {
-                repository.insertEndpoint(EndpointEntity(
-                    name = "Local Ollama (Gemma)",
-                    url = "http://10.0.2.2:11434/api/chat",
-                    apiKey = "",
-                    modelName = "gemma:2b",
-                    type = "OLLAMA",
+replacement = """            val hasPollinations = allEndpoints.any { it.modelName == "llama" && it.url.contains("pollinations") }
+            if (!hasPollinations) {
+                // Ensure no other endpoints are primary
+                allEndpoints.forEach { 
+                    if (it.isPrimary) repository.updateEndpoint(it.copy(isPrimary = false))
+                }
+                repository.insertEndpoint(com.example.data.EndpointEntity(
+                    name = "Pollinations (Free Open Source Llama 3)",
+                    url = "https://text.pollinations.ai/openai/chat/completions",
+                    apiKey = "", // No API key required!
+                    modelName = "llama",
+                    type = "OPENAI",
                     isActive = true,
                     isPrimary = true
-                ))
-                repository.insertEndpoint(EndpointEntity(
-                    name = "Local Ollama (Llama 3 Abliterated)",
-                    url = "http://10.0.2.2:11434/api/chat",
-                    apiKey = "",
-                    modelName = "llama3:8b-instruct-fp16",
-                    type = "OLLAMA",
-                    isActive = true,
-                    isPrimary = false
-                ))
-                repository.insertEndpoint(EndpointEntity(
-                    name = "Groq (Llama 3 8B)",
-                    url = "https://api.groq.com/openai/v1/chat/completions",
-                    apiKey = "",
-                    modelName = "llama3-8b-8192",
-                    type = "OPENAI",
-                    isActive = true,
-                    isPrimary = false
-                ))
-                repository.insertEndpoint(EndpointEntity(
-                    name = "Groq (Mixtral 8x7B)",
-                    url = "https://api.groq.com/openai/v1/chat/completions",
-                    apiKey = "",
-                    modelName = "mixtral-8x7b-32768",
-                    type = "OPENAI",
-                    isActive = true,
-                    isPrimary = false
-                ))
-                repository.insertEndpoint(EndpointEntity(
-                    name = "OpenRouter (Dolphin Llama 3 8B Uncensored)",
-                    url = "https://openrouter.ai/api/v1/chat/completions",
-                    apiKey = "",
-                    modelName = "cognitivecomputations/dolphin-llama-3-8b",
-                    type = "OPENAI",
-                    isActive = true,
-                    isPrimary = false
-                ))
-                repository.insertEndpoint(EndpointEntity(
-                    name = "OpenRouter (Hermes 3 8B Uncensored)",
-                    url = "https://openrouter.ai/api/v1/chat/completions",
-                    apiKey = "",
-                    modelName = "nousresearch/hermes-3-llama-3.1-8b",
-                    type = "OPENAI",
-                    isActive = true,
-                    isPrimary = false
-                ))
-                repository.insertEndpoint(EndpointEntity(
-                    name = "OpenRouter (Llama 3.1 8B Free)",
-                    url = "https://openrouter.ai/api/v1/chat/completions",
-                    apiKey = "",
-                    modelName = "meta-llama/llama-3.1-8b-instruct:free",
-                    type = "OPENAI",
-                    isActive = true,
-                    isPrimary = false
                 ))
             }"""
 

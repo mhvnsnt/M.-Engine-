@@ -41,9 +41,14 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToPrivacy: () -> Unit = {}
 ) {
+    val endpointStatuses by viewModel.endpointStatuses.collectAsStateWithLifecycle()
     val styleProfile by viewModel.styleProfile.collectAsStateWithLifecycle()
     val initialSystemInstruction by viewModel.systemInstruction.collectAsStateWithLifecycle()
     val endpoints by viewModel.endpoints.collectAsStateWithLifecycle()
+    val initialTelegramToken by viewModel.telegramBotToken.collectAsStateWithLifecycle()
+    var telegramToken by remember { mutableStateOf(initialTelegramToken) }
+    LaunchedEffect(initialTelegramToken) { telegramToken = initialTelegramToken }
+    
     val initialGithubClientId by viewModel.githubClientId.collectAsStateWithLifecycle()
     var githubClientId by remember { mutableStateOf(initialGithubClientId) }
     val initialUseWhisper by viewModel.useWhisperModel.collectAsStateWithLifecycle()
@@ -66,11 +71,15 @@ fun SettingsScreen(
             githubClientId = initialGithubClientId
         }
     }
+    val autoSyncGithub by viewModel.autoSyncGithub.collectAsStateWithLifecycle()
+    val pullMemoryOnStart by viewModel.pullMemoryOnStart.collectAsStateWithLifecycle()
+    val councilMode by viewModel.councilMode.collectAsStateWithLifecycle()
     val initialGithubPat by viewModel.githubPat.collectAsStateWithLifecycle()
     
     var systemInstruction by remember { mutableStateOf(initialSystemInstruction) }
     var githubPat by remember { mutableStateOf(initialGithubPat) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf<com.example.data.EndpointEntity?>(null) }
     
     LaunchedEffect(initialSystemInstruction) {
         if (systemInstruction != initialSystemInstruction) {
@@ -136,7 +145,30 @@ fun SettingsScreen(
                         Text("${endpoint.type}: ${endpoint.modelName}", style = MaterialTheme.typography.bodySmall)
                         Text(endpoint.url, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         
+                        val isFree = endpoint.modelName.contains("free", ignoreCase = true) || endpoint.type == "OLLAMA"
+                        val costBadge = if (isFree) "Free/Local" else "Paid API"
+                        val currentStatus = endpointStatuses[endpoint.id] ?: "Unknown (Not tested yet)"
+                        val statusColor = when {
+                            currentStatus.startsWith("Working") -> androidx.compose.ui.graphics.Color(0xFF4CAF50)
+                            currentStatus.startsWith("Error") -> MaterialTheme.colorScheme.error
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                        
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            androidx.compose.material3.SuggestionChip(
+                                onClick = {},
+                                label = { Text(costBadge) },
+                                modifier = Modifier.height(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(currentStatus, style = MaterialTheme.typography.labelSmall, color = statusColor)
+                        }
+                        
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                            TextButton(onClick = { showEditDialog = endpoint }) {
+                                Text("Edit")
+                            }
                             TextButton(onClick = { viewModel.deleteEndpoint(endpoint) }, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
                                 Text("Delete")
                             }
@@ -274,6 +306,23 @@ fun SettingsScreen(
                     state = deviceFlowState!!,
                     onDismiss = { viewModel.cancelGithubDeviceFlow() }
                 )
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Auto-sync conversations to GitHub", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = autoSyncGithub,
+                        onCheckedChange = { viewModel.updateAutoSyncGithub(it) }
+                    )
+                }
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Pull memory on start", modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = pullMemoryOnStart,
+                        onCheckedChange = { viewModel.updatePullMemoryOnStart(it) }
+                    )
+                }
+
             }
 
             
@@ -364,6 +413,17 @@ fun SettingsScreen(
             }
         }
         
+        showEditDialog?.let { endpoint ->
+            EditEndpointDialog(
+                endpoint = endpoint,
+                onDismiss = { showEditDialog = null },
+                onSave = { apiKey ->
+                    viewModel.updateEndpointApiKey(endpoint.id, apiKey)
+                    showEditDialog = null
+                }
+            )
+        }
+
         if (showAddDialog) {
             AddEndpointDialog(
                 onDismiss = { showAddDialog = false },
@@ -456,6 +516,40 @@ fun DeviceFlowDialog(state: DeviceFlowState, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        }
+    )
+}
+
+@Composable
+fun EditEndpointDialog(
+    endpoint: com.example.data.EndpointEntity,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit
+) {
+    var apiKey by remember { mutableStateOf(endpoint.apiKey) }
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit ${endpoint.name}") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = apiKey,
+                    onValueChange = { apiKey = it },
+                    label = { Text("API Key") },
+                    placeholder = { Text("sk-...") }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(apiKey) }
+            ) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }
         }
     )
