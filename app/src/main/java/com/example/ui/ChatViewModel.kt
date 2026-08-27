@@ -76,7 +76,17 @@ class ChatViewModel(
 
     val memoryManager = HierarchicalMemoryManager(context, memoryDao, embeddingEngine)
     val codingTools = CodingTools(context)
-    val codeJarvis = CodeJarvis(codingTools, com.example.ai.TreeSitterEngine(), graphDao)
+    val capabilityRegistry = com.example.ai.capabilities.CapabilityRegistryImpl().apply {
+        register(com.example.ai.capabilities.OpenRouterProvider())
+        register(com.example.ai.capabilities.OllamaProvider())
+    }
+    val modelRouter = com.example.ai.capabilities.ModelRouter(capabilityRegistry)
+    val codeJarvis = CodeJarvis(codingTools, com.example.ai.TreeSitterEngine(), graphDao, modelRouter)
+    val agentOrchestrator = com.example.ai.AgentOrchestrator(memoryManager, codeJarvis, codingTools)
+    val pendingPlan = kotlinx.coroutines.flow.MutableStateFlow<com.example.ai.AgentPlan?>(null)
+    val isExecutingPlan = kotlinx.coroutines.flow.MutableStateFlow(false)
+    private var activeAgentJob: kotlinx.coroutines.Job? = null
+
     val messages: StateFlow<List<MessageEntity>> = repository.allMessages.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -442,27 +452,101 @@ class ChatViewModel(
             
             // Save user message and embed
             
+            if (text.startsWith("/self-improve")) {
+                val responseMsg = MessageEntity(
+                    text = "Initiating Self-Development Mode (M. Engine Cognitive Kernel). Connecting to Firebase Control Plane to orchestrate remote verification and branch generation...",
+                    isUser = false,
+                    responderName = "M. Engine",
+                    groupId = groupId
+                )
+                repository.insertMessage(responseMsg)
+                // TODO: Wire to Firebase AgentJob for the full RESEARCH -> PLAN -> MODIFY -> BUILD -> TEST -> REVIEW loop
+                return@launch
+            }
             if (text.startsWith("/code ")) {
+
                 val command = text.removePrefix("/code ").trim()
                 val responseMsg = MessageEntity(text = "Executing CodeJarvis...", isUser = false, responderName = "CodeJarvis", groupId = groupId)
                 val insertedId = repository.insertMessage(responseMsg).toInt()
                 
                 try {
-                    val primaryEndpoint = repository.getPrimaryEndpoint()
-                    if (primaryEndpoint != null) {
-                        val result = codeJarvis.handleCodeCommand(
-                            command = command,
-                            githubPat = githubPat.value,
-                            endpoint = primaryEndpoint
-                        )
-                        repository.updateMessage(responseMsg.copy(id = insertedId, text = result))
+                    val activeEndpoints = repository.getActiveEndpoints()
+                    if (activeEndpoints.isNotEmpty()) {
+                        val sortedEndpoints = activeEndpoints.sortedByDescending { it.isPrimary }
+                        try {
+                            val result = codeJarvis.handleCodeCommand(
+                                command = command,
+                                githubPat = githubPat.value,
+                                endpoints = sortedEndpoints
+                            )
+                            repository.updateMessage(responseMsg.copy(id = insertedId, text = result))
+                        } catch (e: Exception) {
+                            repository.updateMessage(responseMsg.copy(id = insertedId, text = "CodeJarvis Error: ${e.message}"))
+                        }
                     } else {
-                        repository.updateMessage(responseMsg.copy(id = insertedId, text = "Error: No primary endpoint selected for CodeJarvis."))
+                        repository.updateMessage(responseMsg.copy(id = insertedId, text = "Error: No active endpoints found for CodeJarvis."))
                     }
                 } catch(e: Exception) {
                     repository.updateMessage(responseMsg.copy(id = insertedId, text = "CodeJarvis Error: ${e.message}"))
                 }
                 syncMemory()
+                return@launch
+            }
+            
+            if (text.startsWith("/plan ")) {
+                val command = text.removePrefix("/plan ").trim()
+                val responseMsg = MessageEntity(text = "Formulating structured plan...", isUser = false, responderName = "AgentOrchestrator", groupId = groupId)
+                val insertedId = repository.insertMessage(responseMsg).toInt()
+                
+                activeAgentJob = viewModelScope.launch(Dispatchers.IO) {
+                    _isGenerating.value = true
+                    try {
+                        val activeEndpoints = repository.getActiveEndpoints()
+                        if (activeEndpoints.isNotEmpty()) {
+                            val sortedEndpoints = activeEndpoints.sortedByDescending { it.isPrimary }
+                            try {
+                                val plan = agentOrchestrator.plan(
+                                    prompt = command,
+                                    endpoints = sortedEndpoints,
+                                    githubPat = githubPat.value
+                                )
+                                    
+                                    val formattedPlan = buildString {
+                                        appendLine("**GOAL:** ${plan.goal}")
+                                        appendLine("**REQUIRES APPROVAL:** ${plan.requiresApproval}")
+                                        appendLine()
+                                        plan.steps.forEachIndexed { index, step ->
+                                            appendLine("${index + 1}. ${step.description}")
+                                            if (step.toolRequest != null) {
+                                                appendLine("   *Tool:* `${step.toolRequest.toolName}` [${step.toolRequest.permissionLevel}]")
+                                                appendLine("   *Params:* `${step.toolRequest.parameters}`")
+                                            }
+                                        }
+                                    }
+                                    repository.updateMessage(responseMsg.copy(id = insertedId, text = formattedPlan))
+                                    
+                                    if (plan.requiresApproval) {
+                                        pendingPlan.value = plan
+                                    } else {
+                                        executePlanInternal(plan)
+                                    }
+                                } catch (e: kotlinx.coroutines.CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    repository.updateMessage(responseMsg.copy(id = insertedId, text = "AgentOrchestrator Error: ${e.message}"))
+                                }
+                        } else {
+                            repository.updateMessage(responseMsg.copy(id = insertedId, text = "Error: No active endpoints found for AgentOrchestrator."))
+                        }
+                    } catch(e: kotlinx.coroutines.CancellationException) {
+                        repository.updateMessage(responseMsg.copy(id = insertedId, text = "AgentOrchestrator cancelled."))
+                    } catch(e: Exception) {
+                        repository.updateMessage(responseMsg.copy(id = insertedId, text = "AgentOrchestrator Error: ${e.message}"))
+                    } finally {
+                        _isGenerating.value = false
+                    }
+                    syncMemory()
+                }
                 return@launch
             }
 
@@ -947,6 +1031,58 @@ class ChatViewModel(
         viewModelScope.launch {
             locationRepository.deleteAllRegions()
         }
+    }
+    
+    private suspend fun executePlanInternal(plan: com.example.ai.AgentPlan) {
+        val groupId = System.currentTimeMillis()
+        val responseMsg = MessageEntity(text = "Executing plan...", isUser = false, responderName = "AgentOrchestrator", groupId = groupId)
+        val insertedId = repository.insertMessage(responseMsg).toInt()
+        isExecutingPlan.value = true
+        
+        try {
+            val result = agentOrchestrator.executePlan(plan, githubPat.value)
+            
+            val resultText = buildString {
+                appendLine("**RESULT**")
+                appendLine(result.finalSummary)
+                result.executionResults.forEachIndexed { i, res ->
+                    appendLine("${i+1}. `${res.request.toolName}` -> ${if(res.success) "Success" else "Failed"}")
+                    appendLine("```\n${res.output}\n```")
+                }
+            }
+            repository.updateMessage(responseMsg.copy(id = insertedId, text = resultText))
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            repository.updateMessage(responseMsg.copy(id = insertedId, text = "OPERATION CANCELLED\nNo subsequent agent steps executed."))
+        } catch (e: Exception) {
+            repository.updateMessage(responseMsg.copy(id = insertedId, text = "Error during execution: ${e.message}"))
+        } finally {
+            isExecutingPlan.value = false
+        }
+    }
+
+    fun approvePlan() {
+        val plan = pendingPlan.value ?: return
+        pendingPlan.value = null
+        
+        activeAgentJob = viewModelScope.launch(Dispatchers.IO) {
+            executePlanInternal(plan)
+            syncMemory()
+        }
+    }
+
+    fun rejectPlan() {
+        pendingPlan.value = null
+        viewModelScope.launch(Dispatchers.IO) {
+            val responseMsg = MessageEntity(text = "PLAN REJECTED\nNo tools executed.", isUser = false, responderName = "AgentOrchestrator")
+            repository.insertMessage(responseMsg)
+            syncMemory()
+        }
+    }
+
+    fun stopExecution() {
+        activeAgentJob?.cancel()
+        activeAgentJob = null
+        isExecutingPlan.value = false
     }
     
     private fun syncMemory() {

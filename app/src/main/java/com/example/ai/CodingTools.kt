@@ -17,7 +17,21 @@ import java.io.File
 import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
+import java.util.concurrent.ConcurrentLinkedQueue
+
 class CodingTools(private val context: Context) {
+    private val activeProcesses = ConcurrentLinkedQueue<Process>()
+
+    fun cancelActiveProcesses() {
+        activeProcesses.forEach { 
+            try {
+                it.destroyForcibly()
+            } catch (e: Exception) {
+                Log.e("CodingTools", "Failed to destroy process", e)
+            }
+        }
+        activeProcesses.clear()
+    }
 
     private fun getRepoDir(owner: String, repo: String): File {
         return File(context.filesDir, "repos/$owner/$repo")
@@ -120,6 +134,8 @@ class CodingTools(private val context: Context) {
                 builder.directory(cwd)
             }
             val process = builder.start()
+            activeProcesses.add(process)
+            
             val reader = BufferedReader(InputStreamReader(process.inputStream))
             val errorReader = BufferedReader(InputStreamReader(process.errorStream))
             val out = StringBuilder()
@@ -135,6 +151,15 @@ class CodingTools(private val context: Context) {
             "STDOUT:\n$out\nSTDERR:\n$err"
         } catch (e: Exception) {
             "Shell Execution Error: ${e.message}"
+        } finally {
+            // Cleanup from active list, though we don't strictly need to track finished ones
+            // but it avoids memory leak of Process objects
+            val it = activeProcesses.iterator()
+            while (it.hasNext()) {
+                if (!it.next().isAlive) {
+                    it.remove()
+                }
+            }
         }
     }
 
@@ -145,6 +170,7 @@ class CodingTools(private val context: Context) {
             
             val builder = ProcessBuilder("python3", scriptFile.absolutePath)
             val process = builder.start()
+            activeProcesses.add(process)
             
             val reader = BufferedReader(InputStreamReader(process.inputStream))
             val errorReader = BufferedReader(InputStreamReader(process.errorStream))
@@ -164,6 +190,13 @@ class CodingTools(private val context: Context) {
             "PYTHON STDOUT:\n$out\nPYTHON STDERR:\n$err"
         } catch (e: Exception) {
             "Python Execution Error: ${e.message}"
+        } finally {
+            val it = activeProcesses.iterator()
+            while (it.hasNext()) {
+                if (!it.next().isAlive) {
+                    it.remove()
+                }
+            }
         }
     }
 

@@ -83,7 +83,7 @@ class LindyEngine(
                                     codeJarvis.handleCodeCommand(
                                         command = text.removePrefix("/code").trim(),
                                         githubPat = githubPat,
-                                        endpoint = endpoint,
+                                        endpoints = listOf(endpoint),
                                         telegramBotToken = token,
                                         telegramChatId = chatId
                                     )
@@ -91,7 +91,7 @@ class LindyEngine(
                                     codeJarvis.handleCodeCommand(
                                         command = text,
                                         githubPat = githubPat,
-                                        endpoint = endpoint,
+                                        endpoints = listOf(endpoint),
                                         telegramBotToken = token,
                                         telegramChatId = chatId
                                     )

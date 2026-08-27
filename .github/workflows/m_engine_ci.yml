@@ -1,0 +1,55 @@
+name: M. Engine Autonomous CI/CD
+
+on:
+  push:
+    branches: [ "main", "fix/*", "integrate/*" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts') }}
+          restore-keys: ${{ runner.os }}-gradle
+
+      - name: Static Security Scan (Detekt/Lint)
+        run: ./gradlew lintDebug detekt
+
+      - name: Unit & Integration Tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Build Debug APK (Actuator Target)
+        run: ./gradlew assembleDebug
+
+      # In a real environment, this spins up an emulator to run the AppActuator tests
+      - name: Run Behavioral & Multimodal Verification (Emulator)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          script: ./gradlew connectedAndroidTest
+
+      - name: Distribute to Firebase App Distribution
+        if: github.ref == 'refs/heads/main' && success()
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ secrets.FIREBASE_APP_ID }}
+          token: ${{ secrets.FIREBASE_TOKEN }}
+          groups: m-engine-testers
+          file: app/build/outputs/apk/debug/app-debug.apk

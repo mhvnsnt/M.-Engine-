@@ -224,6 +224,53 @@ fun ChatScreen(
                 }
             }
 
+            val pendingPlan by viewModel.pendingPlan.collectAsStateWithLifecycle()
+            val isExecutingPlan by viewModel.isExecutingPlan.collectAsStateWithLifecycle()
+
+            if (pendingPlan != null) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("AGENT PLAN", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(8.dp))
+                        Text(pendingPlan!!.goal, style = MaterialTheme.typography.bodyMedium)
+                        Spacer(Modifier.height(8.dp))
+                        pendingPlan!!.steps.forEachIndexed { index, step ->
+                            Text("${index + 1}. ${step.description}", style = MaterialTheme.typography.bodySmall)
+                            if (step.toolRequest != null) {
+                                Text(
+                                    "   Tool: ${step.toolRequest.toolName} [${step.toolRequest.permissionLevel}]",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(16.dp))
+                        Row(horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()) {
+                            OutlinedButton(onClick = { viewModel.rejectPlan() }) {
+                                Text("REJECT")
+                            }
+                            Spacer(Modifier.width(8.dp))
+                            Button(onClick = { viewModel.approvePlan() }) {
+                                Text("APPROVE")
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (isExecutingPlan) {
+                Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), contentAlignment = Alignment.Center) {
+                    Button(onClick = { viewModel.stopExecution() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
+                        Text("STOP")
+                    }
+                }
+            }
+
             if (selectedImageUri != null) {
                 Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     AsyncImage(

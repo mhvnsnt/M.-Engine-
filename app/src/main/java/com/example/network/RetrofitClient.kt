@@ -10,8 +10,27 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 
 object RetrofitClient {
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+    private val sanitizedLogger = object : HttpLoggingInterceptor.Logger {
+        override fun log(message: String) {
+            var sanitized = message
+            // Redact Telegram Bot Tokens in URLs: /bot<token>/
+            sanitized = sanitized.replace(Regex("/bot[0-9]+:[a-zA-Z0-9_\\-]+/"), "/bot[REDACTED]/")
+            // Redact explicit Bearer tokens in body or headers
+            sanitized = sanitized.replace(Regex("Bearer\\s+[a-zA-Z0-9_\\-\\.]+"), "Bearer [REDACTED]")
+            // Redact raw GitHub PAT tokens (ghp_...)
+            sanitized = sanitized.replace(Regex("ghp_[a-zA-Z0-9]+"), "[REDACTED_PAT]")
+            // Redact standard OpenRouter keys (sk-or-v1-...)
+            sanitized = sanitized.replace(Regex("sk-or-v1-[a-zA-Z0-9]+"), "[REDACTED_OPENROUTER_KEY]")
+            
+            android.util.Log.d("OkHttp", sanitized)
+        }
+    }
+
+    private val loggingInterceptor = HttpLoggingInterceptor(sanitizedLogger).apply {
+        level = if (com.example.BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        redactHeader("Authorization")
+        redactHeader("Cookie")
+        redactHeader("X-Api-Key")
     }
 
     val moshi = Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()

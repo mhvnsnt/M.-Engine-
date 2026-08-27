@@ -17,10 +17,14 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
+import com.example.ai.capabilities.ModelRouter
+import com.example.ai.capabilities.ModelMessage
+
 class CodeJarvis(
     private val codingTools: CodingTools,
     private val treeSitterEngine: TreeSitterEngine,
-    private val graphDao: GraphNodeDao
+    private val graphDao: GraphNodeDao,
+    private val modelRouter: ModelRouter
 ) {
     suspend fun handleCodeCommand(
         command: String,
@@ -28,7 +32,7 @@ class CodeJarvis(
         owner: String = "mhvnsnt",
         repo: String = "M.-Engine",
         branch: String = "main",
-        endpoint: EndpointEntity,
+        endpoints: List<EndpointEntity>,
         telegramBotToken: String = "",
         telegramChatId: Long = 0L
     ): String = withContext(Dispatchers.IO) {
@@ -116,7 +120,7 @@ class CodeJarvis(
                 iteration++
                 Log.d("CodeJarvis", "Agent Loop Iteration: $iteration")
 
-                val responseText = callModel(endpoint, systemInstruction, history)
+                val responseText = callModel(endpoints, systemInstruction, history)
                 history.add(OllamaMessage(role = "assistant", content = responseText))
 
                 var toolOutput = ""
@@ -212,70 +216,8 @@ class CodeJarvis(
         }
     }
 
-    private suspend fun callModel(endpoint: EndpointEntity, systemPrompt: String, history: List<OllamaMessage>): String {
-        return if (endpoint.type == "OPENAI") {
-            val openRouterHistory = mutableListOf<OpenRouterMessage>()
-            openRouterHistory.add(OpenRouterMessage(role = "system", content = listOf(OpenRouterContentPart(type = "text", text = systemPrompt))))
-            history.forEach { msg ->
-                openRouterHistory.add(OpenRouterMessage(role = msg.role, content = listOf(OpenRouterContentPart(type = "text", text = msg.content))))
-            }
-
-            val req = OpenRouterRequest(
-                model = endpoint.modelName,
-                messages = openRouterHistory,
-                stream = false
-            )
-            val response = RetrofitClient.openRouterService.generateChatStream(endpoint.url, "Bearer ${endpoint.apiKey}", request = req)
-            if (!response.isSuccessful) throw Exception("HTTP ${response.code()}: ${response.errorBody()?.string()}")
-            val reader = BufferedReader(InputStreamReader(response.body()!!.byteStream()))
-            var completeResponse = ""
-            var line: String?
-            val adapter = Moshi.Builder().add(KotlinJsonAdapterFactory()).build().adapter(com.example.network.OpenRouterResponse::class.java)
-            while (reader.readLine().also { line = it } != null) {
-                line?.let { jsonLine ->
-                    if (jsonLine.startsWith("data: ")) {
-                        val data = jsonLine.substring(6)
-                        if (data != "[DONE]") {
-                            try {
-                                val chunk = adapter.fromJson(data)
-                                chunk?.choices?.firstOrNull()?.delta?.content?.let { completeResponse += it }
-                            } catch (e: Exception) {}
-                        }
-                    } else if (jsonLine.startsWith("{")) {
-                        try {
-                            val resp = adapter.fromJson(jsonLine)
-                            val c = resp?.choices?.firstOrNull()
-                            (c?.delta?.content ?: c?.message?.content)?.let { completeResponse += it }
-                        } catch (e: Exception) {}
-                    }
-                }
-            }
-            completeResponse
-        } else {
-            val ollamaHistory = mutableListOf<OllamaMessage>()
-            ollamaHistory.add(OllamaMessage(role = "system", content = systemPrompt))
-            ollamaHistory.addAll(history)
-
-            val req = OllamaChatRequest(
-                model = endpoint.modelName,
-                messages = ollamaHistory,
-                stream = false
-            )
-            val response = RetrofitClient.service.generateChatStream(endpoint.url, req)
-            if (!response.isSuccessful) throw Exception("HTTP ${response.code()}: ${response.errorBody()?.string()}")
-            val reader = BufferedReader(InputStreamReader(response.body()!!.byteStream()))
-            var completeResponse = ""
-            var line: String?
-            val adapter = Moshi.Builder().add(KotlinJsonAdapterFactory()).build().adapter(com.example.network.OllamaChatResponse::class.java)
-            while (reader.readLine().also { line = it } != null) {
-                line?.let { jsonLine ->
-                    try {
-                        val chunk = adapter.fromJson(jsonLine)
-                        chunk?.message?.content?.let { completeResponse += it }
-                    } catch (e: Exception) {}
-                }
-            }
-            completeResponse
-        }
+    suspend fun callModel(endpoints: List<EndpointEntity>, systemPrompt: String, history: List<OllamaMessage>): String {
+        val modelMessages = history.map { ModelMessage(role = it.role, content = it.content) }
+        return modelRouter.generate(endpoints, systemPrompt, modelMessages).text
     }
 }

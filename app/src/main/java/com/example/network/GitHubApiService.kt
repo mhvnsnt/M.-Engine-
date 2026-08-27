@@ -6,10 +6,7 @@ import retrofit2.http.Header
 import retrofit2.http.Url
 import retrofit2.http.POST
 import retrofit2.http.PATCH
-
 import okhttp3.ResponseBody
-
-
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
@@ -99,6 +96,21 @@ interface GitHubApiService {
         @Path("branch") branch: String,
         @retrofit2.http.Body request: GitHubUpdateRefRequest
     ): GitHubRefResponse
+
+    @GET("user/repos")
+    suspend fun listRepositories(@Header("Authorization") auth: String?): List<GitHubRepoDto>
+
+    @GET("repos/{owner}/{repo}")
+    suspend fun getRepository(@Header("Authorization") auth: String?, @Path("owner") owner: String, @Path("repo") repo: String): GitHubRepoDto
+
+    @GET("repos/{owner}/{repo}/issues/{issue_number}")
+    suspend fun getIssue(@Header("Authorization") auth: String?, @Path("owner") owner: String, @Path("repo") repo: String, @Path("issue_number") issueNumber: Int): GitHubIssueDto
+
+    @POST("repos/{owner}/{repo}/git/refs")
+    suspend fun createReference(@Header("Authorization") auth: String?, @Path("owner") owner: String, @Path("repo") repo: String, @retrofit2.http.Body request: GitHubCreateRefRequest): GitHubRefResponse
+
+    @POST("repos/{owner}/{repo}/pulls")
+    suspend fun createPullRequest(@Header("Authorization") auth: String?, @Path("owner") owner: String, @Path("repo") repo: String, @retrofit2.http.Body request: GitHubCreatePRRequest): GitHubPRResponse
 }
 
 data class GitHubTreeResponse(
@@ -111,21 +123,35 @@ data class GitHubTreeResponse(
 data class GitHubTreeItem(
     val path: String,
     val mode: String,
-    val type: String, // "blob" or "tree"
+    val type: String,
     val sha: String,
     val size: Long?,
     val url: String
 )
 
-
 data class GitHubRefResponse(val ref: String, @com.squareup.moshi.Json(name = "object") val objectInfo: GitHubRefObject)
 data class GitHubRefObject(val sha: String, val type: String)
+
 data class GitHubCommitResponse(val sha: String, val tree: GitHubCommitTree)
 data class GitHubCommitTree(val sha: String)
+
 data class GitHubBlobRequest(val content: String, val encoding: String = "utf-8")
 data class GitHubBlobResponse(val sha: String, val url: String)
+
 data class GitHubTreeRequest(val base_tree: String, val tree: List<GitHubTreeItemRequest>)
 data class GitHubTreeItemRequest(val path: String, val mode: String = "100644", val type: String = "blob", val sha: String)
+
 data class GitHubTreeResponseInfo(val sha: String, val url: String)
+
 data class GitHubCreateCommitRequest(val message: String, val tree: String, val parents: List<String>)
+
 data class GitHubUpdateRefRequest(val sha: String, val force: Boolean = true)
+
+data class GitHubRepoDto(val owner: GitHubOwnerDto, val name: String, val default_branch: String, val description: String?, val stargazers_count: Int, val language: String?)
+data class GitHubOwnerDto(val login: String)
+
+data class GitHubIssueDto(val number: Int, val title: String, val body: String?, val state: String)
+
+data class GitHubCreateRefRequest(val ref: String, val sha: String)
+data class GitHubCreatePRRequest(val title: String, val body: String, val head: String, val base: String)
+data class GitHubPRResponse(val html_url: String, val number: Int)

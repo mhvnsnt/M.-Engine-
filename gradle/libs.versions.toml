@@ -107,6 +107,8 @@ objectbox-android = { group = "io.objectbox", name = "objectbox-android", versio
 onnxruntime-android = { group = "com.microsoft.onnxruntime", name = "onnxruntime-android", version.ref = "onnxruntime" }
 
 
+firebase-functions = { group = "com.google.firebase", name = "firebase-functions" }
+firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
 [plugins]
 objectbox = { id = "io.objectbox", version.ref = "objectbox" }
 android-application = { id = "com.android.application", version.ref = "agp" }

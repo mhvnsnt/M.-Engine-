@@ -6,6 +6,8 @@ import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalDrawerSheet
@@ -30,7 +32,9 @@ import androidx.navigation.compose.rememberNavController
 
 sealed class Screen(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     object Chat : Screen("chat", "Chat", Icons.AutoMirrored.Filled.Chat)
-    object Workspace : Screen("workspace", "Workspace", Icons.Default.Folder)
+    object Workspace : Screen("workspace", "Projects", Icons.Default.Folder)
+    object Tasks : Screen("tasks", "Tasks", Icons.Default.List)
+    object Evidence : Screen("evidence", "Evidence", Icons.Default.CheckCircle)
     object Settings : Screen("settings", "Settings", Icons.Default.Settings)
     object Privacy : Screen("privacy", "Privacy", Icons.Default.Settings)
 }
@@ -57,6 +61,8 @@ fun MainScreen(viewModel: ChatViewModel, workspaceViewModel: com.example.ui.Work
     val items = listOf(
         Screen.Chat,
         Screen.Workspace,
+        Screen.Tasks,
+        Screen.Evidence,
         Screen.Settings
     )
 
@@ -105,6 +111,12 @@ fun MainScreen(viewModel: ChatViewModel, workspaceViewModel: com.example.ui.Work
             }
             composable(Screen.Workspace.route) {
                 WorkspaceScreen(viewModel = workspaceViewModel)
+            }
+            composable(Screen.Tasks.route) {
+                TasksScreen()
+            }
+            composable(Screen.Evidence.route) {
+                EvidenceScreen()
             }
             composable(Screen.Settings.route) {
                 SettingsScreen(viewModel = viewModel, onNavigateBack = { navController.popBackStack() }, onNavigateToPrivacy = { navController.navigate(Screen.Privacy.route) })
