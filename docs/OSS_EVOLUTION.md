@@ -35,14 +35,16 @@ A discovery record is not an integration record, and a benchmark win is not perm
 | Static analysis | NullAway | Detect Java nullness defects early | AUGMENT | Targets Java-facing code; complement Kotlin analysis rather than replacing it. |
 | UI verification | Showkase | Compose component discovery and visual verification | AUGMENT | Keep existing Roborazzi/screenshot infrastructure and use it as an additional observability surface. |
 
-## Why these candidates
+## Research provenance
 
-* Kotlin's structured-concurrency model gives M. Engine a strong foundation for cancellable worker trees and bounded lifetimes. The official Kotlin documentation explicitly recommends structured concurrency over independent global work. citeturn0search1turn0search11
-* Resilience4j supplies composable retry, circuit-breaker, rate-limiter, bulkhead and timeout primitives, including Kotlin coroutine extensions. citeturn0search0turn0search4
-* Temporal provides durable workflow-as-code primitives for long-running execution and recovery; its Java SDK supports Java 1.8+, while current development requires Java 21, making it a better candidate for a separate control-plane worker than an immediate Android dependency. citeturn1search0turn1search8
-* OpenTelemetry Java provides stable traces, metrics and logs, which can augment the Agency Ledger with machine-observable execution telemetry. citeturn1search2
-* NullAway is an MIT-licensed static analyzer aimed at preventing null dereferences with low build-time overhead, making it useful for hardening Java integration boundaries. citeturn1search6
-* Showkase can discover and visualize Compose components and supports generated UI permutations, making it a useful additional visual-regression surface rather than a replacement for the existing screenshot system. citeturn1search1
+* Kotlin structured concurrency: https://kotlinlang.org/docs/coroutines-and-channels.html
+* Resilience4j: https://resilience4j.readme.io/ and https://github.com/resilience4j/resilience4j
+* Temporal Java SDK: https://github.com/temporalio/sdk-java
+* OpenTelemetry Java: https://opentelemetry.io/docs/languages/java/
+* NullAway: https://github.com/uber/NullAway
+* Showkase: https://github.com/airbnb/Showkase
+
+These sources establish candidate capabilities, not production suitability. M. Engine must independently verify the exact version, license, dependency graph, security posture, build, benchmark and integration evidence before adoption.
 
 ## Selection rule
 
