@@ -47,6 +47,7 @@ googleid = "1.1.1"
 
 
 [libraries]
+firebase-appdistribution = { group = "com.google.firebase", name = "firebase-appdistribution", version = "16.0.0-beta14" }
 acra-mail = { group = "ch.acra", name = "acra-mail", version.ref = "acra" }
 acra-toast = { group = "ch.acra", name = "acra-toast", version.ref = "acra" }
 acra-core = { group = "ch.acra", name = "acra-core", version.ref = "acra" }

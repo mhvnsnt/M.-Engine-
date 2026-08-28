@@ -22,6 +22,7 @@ class FirebaseSandboxManager(private val functions: FirebaseFunctions = Firebase
             )
             
             val result = functions.getHttpsCallable("provisionSandbox").call(data).await()
+            @Suppress("UNCHECKED_CAST")
             val resultData = result.data as? Map<String, Any>
             resultData?.get("sandboxId") as? String ?: throw Exception("Invalid response from provisionSandbox")
             
@@ -57,6 +58,7 @@ class FirebaseSandboxManager(private val functions: FirebaseFunctions = Firebase
             )
             
             val result = functions.getHttpsCallable("executeInSandbox").call(data).await()
+            @Suppress("UNCHECKED_CAST")
             val resultData = result.data as? Map<String, Any>
             
             ExecutionResult(

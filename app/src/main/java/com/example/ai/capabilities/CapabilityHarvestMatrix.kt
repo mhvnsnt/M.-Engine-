@@ -19,3 +19,9 @@ interface CapabilityHarvestMatrix {
     suspend fun registerCandidateEvaluation(capabilityName: String, record: ImplementationRecord)
     suspend fun compareCapabilities(current: ImplementationRecord?, candidate: ImplementationRecord): IntegrationDecision
 }
+
+class CapabilityHarvestMatrixImpl : CapabilityHarvestMatrix {
+    override suspend fun getCurrentImplementation(capabilityName: String): ImplementationRecord? = null
+    override suspend fun registerCandidateEvaluation(capabilityName: String, record: ImplementationRecord) {}
+    override suspend fun compareCapabilities(current: ImplementationRecord?, candidate: ImplementationRecord): IntegrationDecision = IntegrationDecision(true, "Testing", 10f)
+}

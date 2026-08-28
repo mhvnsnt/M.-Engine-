@@ -43,6 +43,21 @@ class GitHubServiceImpl(
         }
     }
 
+    override suspend fun getReadme(repo: RepositoryRef): String {
+        return try {
+            val readme = apiService.getReadme(authHeader, repo.owner, repo.name)
+            if (readme.encoding == "base64") {
+                val decoded = android.util.Base64.decode(readme.content.replace("\n", ""), android.util.Base64.DEFAULT)
+                String(decoded)
+            } else {
+                readme.content
+            }
+        } catch (e: Exception) {
+            Log.e("GitHubServiceImpl", "getReadme error", e)
+            ""
+        }
+    }
+
     override suspend fun inspectIssue(repo: RepositoryRef, issueNumber: Int): IssueDetails {
         return try {
             val issue = apiService.getIssue(authHeader, repo.owner, repo.name, issueNumber)

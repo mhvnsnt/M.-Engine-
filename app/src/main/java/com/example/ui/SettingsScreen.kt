@@ -74,10 +74,8 @@ fun SettingsScreen(
     val autoSyncGithub by viewModel.autoSyncGithub.collectAsStateWithLifecycle()
     val pullMemoryOnStart by viewModel.pullMemoryOnStart.collectAsStateWithLifecycle()
     val councilMode by viewModel.councilMode.collectAsStateWithLifecycle()
-    val initialGithubPat by viewModel.githubPat.collectAsStateWithLifecycle()
     
     var systemInstruction by remember { mutableStateOf(initialSystemInstruction) }
-    var githubPat by remember { mutableStateOf(initialGithubPat) }
     var showAddDialog by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf<com.example.data.EndpointEntity?>(null) }
     
@@ -87,11 +85,6 @@ fun SettingsScreen(
         }
     }
     
-    LaunchedEffect(initialGithubPat) {
-        if (githubPat != initialGithubPat) {
-            githubPat = initialGithubPat
-        }
-    }
     
     Scaffold(
         topBar = {
@@ -184,6 +177,58 @@ fun SettingsScreen(
                 Icon(Icons.Default.Add, contentDescription = "Add Endpoint")
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Add Endpoint")
+            }
+            
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            Text("Intelligence Status & Autonomous Development", style = MaterialTheme.typography.titleMedium)
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("Autonomous Worker Pool & Reality Loop (Mission #3)", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "M. Engine orchestrates 10 specialized autonomous workers (Coder, Repo Analysis, Research, Security, Testing, Device, etc.) with value-prioritized self-improvement and development provenance.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { viewModel.sendMessage("/intelligence") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Diagnostics")
+                        }
+                        OutlinedButton(
+                            onClick = { viewModel.sendMessage("/workers") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Worker Pool")
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { viewModel.sendMessage("/provenance") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Provenance")
+                        }
+                        Button(
+                            onClick = { viewModel.sendMessage("/self-improve") },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Mission #3 Self-Dev")
+                        }
+                    }
+                }
             }
             
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
@@ -290,16 +335,6 @@ fun SettingsScreen(
                 Text("Connect with GitHub (Device Flow)")
             }
             
-            OutlinedTextField(
-                value = githubPat,
-                onValueChange = {
-                    githubPat = it
-                    viewModel.updateGithubPat(it)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("GitHub Personal Access Token (PAT) / Auth Token") },
-                placeholder = { Text("ghp_...") }
-            )
             
             if (deviceFlowState != null) {
                 DeviceFlowDialog(

@@ -7,6 +7,7 @@ import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.material3.DrawerValue
@@ -33,8 +34,11 @@ import androidx.navigation.compose.rememberNavController
 sealed class Screen(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     object Chat : Screen("chat", "Chat", Icons.AutoMirrored.Filled.Chat)
     object Workspace : Screen("workspace", "Projects", Icons.Default.Folder)
-    object Tasks : Screen("tasks", "Tasks", Icons.Default.List)
+    object Tasks : Screen("tasks", "Tasks", Icons.AutoMirrored.Filled.List)
     object Evidence : Screen("evidence", "Evidence", Icons.Default.CheckCircle)
+    object Connections : Screen("connections", "Connections", Icons.Default.Settings)
+    object CapabilityAudit : Screen("capability_audit", "Audit", Icons.Default.Settings)
+    object CapabilityCompetition : Screen("capability_competition", "Competition", Icons.Default.Settings)
     object Settings : Screen("settings", "Settings", Icons.Default.Settings)
     object Privacy : Screen("privacy", "Privacy", Icons.Default.Settings)
 }
@@ -63,7 +67,8 @@ fun MainScreen(viewModel: ChatViewModel, workspaceViewModel: com.example.ui.Work
         Screen.Workspace,
         Screen.Tasks,
         Screen.Evidence,
-        Screen.Settings
+        Screen.Settings,
+        Screen.Connections
     )
 
     Scaffold(
@@ -113,10 +118,19 @@ fun MainScreen(viewModel: ChatViewModel, workspaceViewModel: com.example.ui.Work
                 WorkspaceScreen(viewModel = workspaceViewModel)
             }
             composable(Screen.Tasks.route) {
-                TasksScreen()
+                TasksScreen(viewModel = viewModel)
             }
             composable(Screen.Evidence.route) {
-                EvidenceScreen()
+                EvidenceScreen(viewModel = viewModel)
+            }
+            composable(Screen.Connections.route) {
+                ConnectionsScreen(viewModel = viewModel, onNavigateBack = { navController.popBackStack() }, onNavigateToAudit = { navController.navigate(Screen.CapabilityAudit.route) })
+            }
+            composable(Screen.CapabilityAudit.route) {
+                CapabilityAuditScreen(viewModel = viewModel, onNavigateBack = { navController.popBackStack() }, onNavigateToCompetition = { navController.navigate(Screen.CapabilityCompetition.route) })
+            }
+            composable(Screen.CapabilityCompetition.route) {
+                CapabilityCompetitionScreen(viewModel = viewModel, onNavigateBack = { navController.popBackStack() })
             }
             composable(Screen.Settings.route) {
                 SettingsScreen(viewModel = viewModel, onNavigateBack = { navController.popBackStack() }, onNavigateToPrivacy = { navController.navigate(Screen.Privacy.route) })

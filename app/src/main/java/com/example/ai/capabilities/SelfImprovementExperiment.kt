@@ -28,7 +28,7 @@ class SelfImprovementExperimentImpl(
         githubService.createBranch(repo, branchName)
         
         // 5. Implement & Build (Simulated CI pipeline trigger)
-        val buildResult = ciCdPipeline.triggerPipeline(repo, "experiment_commit")
+        val buildResult = ciCdPipeline.triggerPipeline(java.io.File("."))
         if (buildResult.state == CiCdState.FAILED) return false
         
         // 6. Test & Run behavioral tests -> Evidence

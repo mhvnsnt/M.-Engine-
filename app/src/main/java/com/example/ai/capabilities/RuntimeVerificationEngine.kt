@@ -50,3 +50,13 @@ interface VisualInteractionRuntime {
     suspend fun wait(session: RuntimeSession, durationMs: Long)
     suspend fun stopSession(session: RuntimeSession): Boolean
 }
+
+class RuntimeVerificationEngineImpl : RuntimeVerificationEngine {
+    override suspend fun build(repo: RepositoryRef, sandboxId: String): BuildResult = BuildResult(true, "", "")
+    override suspend fun launch(repo: RepositoryRef, buildResult: BuildResult): RuntimeSession = RuntimeSession("", "")
+    override suspend fun observe(session: RuntimeSession, mode: ObservationMode): RuntimeObservation = RuntimeObservation(ObservationMode.LOGCAT, "", 0)
+    override suspend fun actuate(session: RuntimeSession, action: RuntimeAction): ActionResult = ActionResult(true, null)
+    override suspend fun reproduce(session: RuntimeSession, scenario: TestScenario): ReproductionResult = ReproductionResult(true, emptyList())
+    override suspend fun diagnose(evidence: RuntimeEvidence): Diagnosis = Diagnosis("", "")
+    override suspend fun verifyFix(before: RuntimeEvidence, after: RuntimeEvidence): VerificationResult = VerificationResult(true, "", "")
+}

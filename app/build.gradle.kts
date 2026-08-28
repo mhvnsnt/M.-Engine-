@@ -135,6 +135,7 @@ dependencies {
   implementation(libs.firebase.appcheck.recaptcha)
   implementation(libs.firebase.appcheck.playintegrity)
   implementation(libs.firebase.functions)
+  implementation("com.google.firebase:firebase-appdistribution:16.0.0-beta14")
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.logging.interceptor)

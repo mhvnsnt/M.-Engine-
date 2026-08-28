@@ -10,6 +10,8 @@ enum class HarvestIntegrationMode {
     DIRECT_LIBRARY_INTEGRATION,
     MODEL_ONLY,
     REMOTE_SERVICE,
+    REMOTE_WORKER,
+    EXTERNAL_GATEWAY,
     REJECT
 }
 

@@ -37,6 +37,7 @@ interface GitHubService {
     suspend fun authenticate(secureToken: String): Boolean
     suspend fun listRepositories(): List<RepositoryRef>
     suspend fun inspectRepository(repo: RepositoryRef): RepoMetadata
+    suspend fun getReadme(repo: RepositoryRef): String
     suspend fun inspectIssue(repo: RepositoryRef, issueNumber: Int): IssueDetails
     suspend fun inspectCIResults(repo: RepositoryRef, commitSha: String): CIResult
     suspend fun retrieveReviewComments(repo: RepositoryRef, prNumber: Int): List<String>

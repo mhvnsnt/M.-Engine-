@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: M. Engine Shared Control Plane API
+  description: The durable backend API consumed by M. Engine Android, Web/PWA, and Remote Workers.
+  version: 1.0.0
+paths:
+  /missions:
+    post:
+      summary: Create a new Mission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+      responses:
+        '200':
+          description: Mission Created
+  /missions/{missionId}/status:
+    get:
+      summary: Get live mission status
+      responses:
+        '200':
+          description: Mission status
+  /workers/dispatch:
+    post:
+      summary: Dispatch task to a Remote Worker (e.g., SWE-agent, OpenHands)
+      responses:
+        '200':
+          description: Task Dispatched
+  /device/command:
+    post:
+      summary: Send command to Device Gateway (ADB/UIAutomator)
+      responses:
+        '200':
+          description: Command executed

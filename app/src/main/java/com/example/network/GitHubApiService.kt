@@ -103,6 +103,9 @@ interface GitHubApiService {
     @GET("repos/{owner}/{repo}")
     suspend fun getRepository(@Header("Authorization") auth: String?, @Path("owner") owner: String, @Path("repo") repo: String): GitHubRepoDto
 
+    @GET("repos/{owner}/{repo}/readme")
+    suspend fun getReadme(@Header("Authorization") auth: String?, @Path("owner") owner: String, @Path("repo") repo: String): GitHubReadmeDto
+
     @GET("repos/{owner}/{repo}/issues/{issue_number}")
     suspend fun getIssue(@Header("Authorization") auth: String?, @Path("owner") owner: String, @Path("repo") repo: String, @Path("issue_number") issueNumber: Int): GitHubIssueDto
 
@@ -129,7 +132,7 @@ data class GitHubTreeItem(
     val url: String
 )
 
-data class GitHubRefResponse(val ref: String, @com.squareup.moshi.Json(name = "object") val objectInfo: GitHubRefObject)
+data class GitHubRefResponse(val ref: String, @param:com.squareup.moshi.Json(name = "object") val objectInfo: GitHubRefObject)
 data class GitHubRefObject(val sha: String, val type: String)
 
 data class GitHubCommitResponse(val sha: String, val tree: GitHubCommitTree)
@@ -155,3 +158,6 @@ data class GitHubIssueDto(val number: Int, val title: String, val body: String?,
 data class GitHubCreateRefRequest(val ref: String, val sha: String)
 data class GitHubCreatePRRequest(val title: String, val body: String, val head: String, val base: String)
 data class GitHubPRResponse(val html_url: String, val number: Int)
+
+
+data class GitHubReadmeDto(val name: String, val path: String, val content: String, val encoding: String)

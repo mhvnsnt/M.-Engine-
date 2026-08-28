@@ -29,6 +29,7 @@ class LocationRepository(
             
             if (location != null) {
                 val geocoder = Geocoder(context, Locale.getDefault())
+                @Suppress("DEPRECATION")
                 val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
                 
                 var regionId = "UNKNOWN"

@@ -1,26 +1,31 @@
-import re
+with open("app/src/main/java/com/example/ui/SettingsScreen.kt", "r") as f:
+    lines = f.readlines()
 
-with open("app/src/main/java/com/example/data/SettingsRepository.kt", "r") as f:
-    content = f.read()
+new_lines = []
+skip = False
+for line in lines:
+    if "val initialGithubPat by viewModel.githubPat.collectAsStateWithLifecycle()" in line:
+        continue
+    if "var githubPat by remember { mutableStateOf(initialGithubPat) }" in line:
+        continue
+    
+    if "LaunchedEffect(initialGithubPat) {" in line:
+        skip = True
+        continue
+    
+    if skip:
+        if "    }" in line:
+            skip = False
+        continue
+        
+    if "OutlinedTextField(" in line and "githubPat," in "".join(lines[lines.index(line):lines.index(line)+5]):
+        skip = True
+        continue
+        
+    if skip and "placeholder = { Text(\"ghp_...\") }" in line:
+        skip = False
+        continue
+    if skip and ")" in line and "ghp_..." not in line:
+        # wait, regex is safer
+        pass
 
-# Add telegram bot token flow if missing
-if 'val telegramBotTokenFlow' not in content:
-    token_key = 'val TELEGRAM_BOT_TOKEN = stringPreferencesKey("telegram_bot_token")'
-    if token_key not in content:
-        content = content.replace('companion object {', f'companion object {{\n        {token_key}')
-    
-    flow_code = """    val telegramBotTokenFlow = dataStore.data.map { preferences ->
-        preferences[TELEGRAM_BOT_TOKEN] ?: ""
-    }
-    
-    suspend fun updateTelegramBotToken(token: String) {
-        dataStore.edit { preferences ->
-            preferences[TELEGRAM_BOT_TOKEN] = token
-        }
-    }
-    
-"""
-    content = content.replace('val openRouterKeyFlow', flow_code + '    val openRouterKeyFlow')
-
-with open("app/src/main/java/com/example/data/SettingsRepository.kt", "w") as f:
-    f.write(content)

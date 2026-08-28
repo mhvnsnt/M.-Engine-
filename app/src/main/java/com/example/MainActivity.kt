@@ -71,9 +71,10 @@ class MainActivity : ComponentActivity() {
         val locationRepository = com.example.data.LocationRepository(applicationContext, database.locationDao())
         val astroRepository = com.example.data.AstroNumerologyRepository(database.astroDao())
         val localIntelligenceRepository = com.example.data.LocalIntelligenceRepository(applicationContext)
-        viewModel = ViewModelProvider(this, ChatViewModelFactory(locationRepository, astroRepository, localIntelligenceRepository, repository, settingsRepository, memoryDao, database.graphNodeDao(), embeddingEngine, ttsEngine, applicationContext))[ChatViewModel::class.java]
+        viewModel = ViewModelProvider(this, ChatViewModelFactory(locationRepository, astroRepository, localIntelligenceRepository, repository, settingsRepository, memoryDao, database.graphNodeDao(), database.jobDao(), embeddingEngine, ttsEngine, applicationContext, database.missionDao()))[ChatViewModel::class.java]
         workspaceViewModel = ViewModelProvider(this, WorkspaceViewModelFactory(applicationContext, database.workspaceDao(), settingsRepository))[WorkspaceViewModel::class.java]
 
+        com.example.ui.RecoveryShell.initiateSafeUpdate(this)
         setContent {
             MyApplicationTheme {
                 Surface(

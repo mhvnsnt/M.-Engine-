@@ -55,8 +55,9 @@ class SelfHealingLoopImpl(
         // (Worker benchmark engine is called here to actually write the code)
         
         // 2. Build & Test (CI)
+        val repoDir = java.io.File(".")
         val commitSha = "simulated_commit"
-        val buildResult = ciCdPipeline.triggerPipeline(issue.repositoryRef, commitSha)
+        val buildResult = ciCdPipeline.triggerPipeline(repoDir)
         
         if (buildResult.state == CiCdState.FAILED) {
             return HealingResult(issue, HealingStatus.REVERTED_FAILED_EVIDENCE, null, branchName)
@@ -89,7 +90,7 @@ class SelfHealingLoopImpl(
         }
 
         // 6. Security Review
-        val securityPassed = ciCdPipeline.runSecurityChecks(issue.repositoryRef, commitSha)
+        val securityPassed = ciCdPipeline.runSecurityChecks(repoDir)
         if (!securityPassed) {
             return HealingResult(issue, HealingStatus.REVERTED_SECURITY, runtimeEvidence, branchName)
         }

@@ -32,24 +32,20 @@ class AdbPhysicalAppActuator(private val deviceId: String? = null) : AppActuator
     }
 
     override suspend fun tap(x: Int, y: Int): Boolean {
-        executeAdb("shell", "input", "tap", x.toString(), y.toString())
-        return true
+        return try { executeAdb("shell", "input", "tap", x.toString(), y.toString()); true } catch(e: Exception) { false }
     }
 
     override suspend fun inputText(text: String): Boolean {
         // Simple sanitization for space replacement
-        executeAdb("shell", "input", "text", text.replace(" ", "%s"))
-        return true
+        return try { executeAdb("shell", "input", "text", text.replace(" ", "%s")); true } catch(e: Exception) { false }
     }
 
     override suspend fun swipe(startX: Float, startY: Float, endX: Float, endY: Float): Boolean {
-        executeAdb("shell", "input", "swipe", startX.toString(), startY.toString(), endX.toString(), endY.toString())
-        return true
+        return try { executeAdb("shell", "input", "swipe", startX.toString(), startY.toString(), endX.toString(), endY.toString()); true } catch(e: Exception) { false }
     }
 
     override suspend fun pressBack(): Boolean {
-        executeAdb("shell", "input", "keyevent", "4")
-        return true
+        return try { executeAdb("shell", "input", "keyevent", "4"); true } catch(e: Exception) { false }
     }
 
     override suspend fun recordVideo(durationMs: Long, outputPath: String): Boolean {

@@ -32,3 +32,26 @@ When processing user requests, be aware that they are often generated via voice-
 - **Reporting Status:** Never describe a build as complete, stable, or working unless you have just run it and are pasting the actual output in this same response.
 - **Proactive Context Gathering:** Do not ask the user what file something is in. Use `grep`, `find`, or `ls` to locate it yourself.
 - **End-to-End Delivery:** If a user asks for a feature, don't just write the code. Write the code, update the UI to expose the feature, test it, commit it, and push it. Take full ownership of the feature lifecycle.
+
+## Connector-First Architecture & Reality Contract
+- **Reality Contract:** Always read and adhere to `REALITY_CONTRACT.md`. Do not build mocks or pretend-success implementations. M. Engine must verify capabilities before declaring them.
+- **Connectors:** M. Engine does not merely contain integrations. It understands its available environment. You must query available capabilities through `ConnectorManager`, not by checking for raw manual secrets.
+- **Zero Manual Secrets:** Never ask the user to paste credentials manually unless strictly unavoidable. Build Connectors that leverage delegated OAuth, OIDC, App installations (like GitHub Apps instead of PATs), or Device Flows.
+- **Evidence Ledger:** All capabilities must be vetted against the Evidence Engine, providing verifiable benchmarks of success or failure.
+
+## Capability Acquisition & Integration (Phase 15C)
+- **Do not implement AcquisitionEngine as a downloader/importer.** Implement it as an evidence-gated capability competition and integration system.
+- **Never automatically promote discovered source code into production.** Every acquired capability must have provenance, dependency inventory, security results, benchmark results, integration classification, rollback information, and reproducible evidence.
+- If a capability cannot be physically retrieved, built, executed, and verified, classify the boundary honestly and stop there. Never substitute a mock or simulation.
+- The user's existing repositories are first-class candidates, not privileged sources. M. Engine should be willing to take the best pieces from those repos or reject them in favor of a more mature external implementation.
+- Research should continuously examine techniques across time (e.g., 2026, 2025, 2024), comparing recency, maturity, adoption, maintenance, benchmarks, security history, dependency health, integration cost, and evidence quality separately. Newest does not automatically mean best.
+
+## UNIVERSAL COMMAND CENTER & MISSION LAYER (Phase 16)
+- **Missions, not Prompts:** Chat is the universal command center. Requests like "Fix the inventory system" are converted into durable, tracked **Missions**, not simple LLM responses.
+- **Universal Reality Loop:** Missions proceed strictly through: `Understand → Retrieve → Research → Plan → Risk → Implement → Build → Run → Observe → Reproduce → Diagnose → Fix → Retest → Compare → Evidence → Regression → Review → Deliver`.
+- **Physical Observation:** M. Engine MUST automatically select the appropriate observation actuator (UI hierarchy, visual screenshots, behavioral video traces, crash logs, profiling) without the user manually instructing it.
+
+## PERSONAL CONTEXT ENGINE
+- **Memory Provenance:** Separate memory into EXPLICIT (direct instructions), OBSERVED (patterns), CONFIRMED (validated hypotheses), INFERRED (assumptions), and REJECTED (corrections).
+- **Project Intelligence:** Maintain a continuous, live map of the user's repositories, capabilities, dependencies, and architecture.
+- **Corrections as Operating Rules:** If the user corrects M. Engine (e.g., "Don't tell me it works until you've run it"), that correction MUST be stored as a durable EXPLICIT Preference rule and applied automatically to all future missions.

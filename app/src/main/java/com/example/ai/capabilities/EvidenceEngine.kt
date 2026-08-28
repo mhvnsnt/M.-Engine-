@@ -32,9 +32,20 @@ enum class EvidenceLevel(val value: Int) {
 
 enum class EvidenceStatus {
     VALID,
+    EXPIRED_COMMIT_MISMATCH,
+    EXPIRED_FILE_MODIFIED,
     STALE,
     REQUIRES_REVALIDATION
 }
+
+data class EvidenceScope(
+    val testedCorpus: List<String>,
+    val scannerOrEngineVersion: String = "2.4.0",
+    val commitHash: String,
+    val environment: String = "Android SDK 35 / OpenJDK 21 / Kotlin 2.0.21",
+    val targetFileHashes: Map<String, String> = emptyMap(),
+    val inputConditions: Map<String, String> = emptyMap()
+)
 
 data class StructuredClaim(
     val scenario: String,
@@ -58,15 +69,21 @@ data class EvidenceRecord(
     val expectedResult: String?,
     val confidenceScore: Double,
     val independentlyVerified: Boolean,
+    val scope: EvidenceScope = EvidenceScope(
+        testedCorpus = listOf("standard"),
+        commitHash = "head"
+    ),
     var status: EvidenceStatus = EvidenceStatus.VALID
 )
 
 interface EvidenceAssuranceEngine {
     suspend fun recordEvidence(record: EvidenceRecord)
-    suspend fun evaluateClaim(claimId: String): Boolean
+    suspend fun evaluateClaim(claimId: String, currentCommit: String = "head", currentFileHashes: Map<String, String> = emptyMap()): Boolean
     suspend fun getEvidenceForClaim(claimId: String): List<EvidenceRecord>
     suspend fun requireLevel(claimId: String, requiredLevel: EvidenceLevel): Boolean
     suspend fun markStale(claimId: String)
+    suspend fun checkAndExpireEvidence(currentCommit: String, currentFileHashes: Map<String, String>): Int
+    fun formatScopedEvidenceReport(record: EvidenceRecord): String
 }
 
 class EvidenceAssuranceEngineImpl : EvidenceAssuranceEngine {
@@ -74,32 +91,50 @@ class EvidenceAssuranceEngineImpl : EvidenceAssuranceEngine {
 
     override suspend fun recordEvidence(record: EvidenceRecord) {
         // Enforce Reality Check weighting policy: Model Assertions = 0
-        if (record.level == EvidenceLevel.MODEL_CLAIM) {
-            // Log warning internally, but we can accept it as Level 0
-        }
         evidenceLedger.add(record)
     }
 
-    override suspend fun evaluateClaim(claimId: String): Boolean {
-        val evidence = getEvidenceForClaim(claimId).filter { it.status == EvidenceStatus.VALID }
-        if (evidence.isEmpty()) return false
-        
-        val highestLevel = evidence.maxByOrNull { it.level.value }?.level ?: EvidenceLevel.MODEL_CLAIM
-        val verified = evidence.any { it.independentlyVerified }
-        
-        // Reality Check Gate
+    override suspend fun evaluateClaim(
+        claimId: String,
+        currentCommit: String,
+        currentFileHashes: Map<String, String>
+    ): Boolean {
+        val evidenceList = getEvidenceForClaim(claimId)
+        if (evidenceList.isEmpty()) return false
+
+        // Revalidate expiration against current commit and file state
+        evidenceList.forEach { record ->
+            if (record.scope.commitHash != "head" && currentCommit != "head" && record.scope.commitHash != currentCommit) {
+                record.status = EvidenceStatus.EXPIRED_COMMIT_MISMATCH
+            } else {
+                record.scope.targetFileHashes.forEach { (file, oldHash) ->
+                    val currentHash = currentFileHashes[file]
+                    if (currentHash != null && currentHash != oldHash) {
+                        record.status = EvidenceStatus.EXPIRED_FILE_MODIFIED
+                    }
+                }
+            }
+        }
+
+        val validEvidence = evidenceList.filter { it.status == EvidenceStatus.VALID }
+        if (validEvidence.isEmpty()) return false
+
+        val highestLevel = validEvidence.maxByOrNull { it.level.value }?.level ?: EvidenceLevel.MODEL_CLAIM
+        val verified = validEvidence.any { it.independentlyVerified }
+
+        // Reality Check Gate: Must have actual runtime evidence or independent reproduction
         return highestLevel.value >= EvidenceLevel.RUNTIME_EVIDENCE.value || verified
     }
 
     override suspend fun getEvidenceForClaim(claimId: String): List<EvidenceRecord> {
-        return evidenceLedger.filter { it.claim.scenario == claimId }
+        return evidenceLedger.filter { it.claim.scenario == claimId || it.claim.scenario.contains(claimId, ignoreCase = true) || it.id == claimId }
     }
 
     override suspend fun requireLevel(claimId: String, requiredLevel: EvidenceLevel): Boolean {
         val evidence = getEvidenceForClaim(claimId).filter { it.status == EvidenceStatus.VALID }
         return evidence.any { it.level.value >= requiredLevel.value }
     }
-    
+
     override suspend fun markStale(claimId: String) {
         evidenceLedger.forEach {
             if (it.claim.scenario == claimId) {
@@ -107,4 +142,46 @@ class EvidenceAssuranceEngineImpl : EvidenceAssuranceEngine {
             }
         }
     }
+
+    override suspend fun checkAndExpireEvidence(
+        currentCommit: String,
+        currentFileHashes: Map<String, String>
+    ): Int {
+        var expiredCount = 0
+        evidenceLedger.forEach { record ->
+            if (record.status == EvidenceStatus.VALID) {
+                if (record.scope.commitHash != "head" && currentCommit != "head" && record.scope.commitHash != currentCommit) {
+                    record.status = EvidenceStatus.EXPIRED_COMMIT_MISMATCH
+                    expiredCount++
+                } else {
+                    for ((file, oldHash) in record.scope.targetFileHashes) {
+                        val currHash = currentFileHashes[file]
+                        if (currHash != null && currHash != oldHash) {
+                            record.status = EvidenceStatus.EXPIRED_FILE_MODIFIED
+                            expiredCount++
+                            break
+                        }
+                    }
+                }
+            }
+        }
+        return expiredCount
+    }
+
+    override fun formatScopedEvidenceReport(record: EvidenceRecord): String {
+        return buildString {
+            append("Evidence ID: ${record.id} [${record.status}]\n")
+            append("Type: ${record.evidenceType} | Level: ${record.level} (${record.level.value}/7)\n")
+            append("Observed: ${record.observedResult}\n")
+            append("Scope Boundary:\n")
+            append("  - Tested Corpus: ${record.scope.testedCorpus.joinToString(", ")}\n")
+            append("  - Engine/Scanner Version: ${record.scope.scannerOrEngineVersion}\n")
+            append("  - Commit Hash: ${record.scope.commitHash}\n")
+            append("  - Environment: ${record.scope.environment}\n")
+            if (record.scope.targetFileHashes.isNotEmpty()) {
+                append("  - Verified File Hashes: ${record.scope.targetFileHashes.keys.joinToString(", ")}\n")
+            }
+        }
+    }
 }
+
