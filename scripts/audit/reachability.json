@@ -2,7 +2,7 @@
   "rows": [
     {
       "file": "app/src/main/java/com/example/MainActivity.kt",
-      "lines": 130,
+      "lines": 133,
       "decls": [
         "MainActivity"
       ],
@@ -2664,7 +2664,7 @@
     },
     {
       "file": "app/src/main/java/com/example/data/AppDatabase.kt",
-      "lines": 24,
+      "lines": 25,
       "decls": [
         "AppDatabase"
       ],
@@ -2937,7 +2937,7 @@
     },
     {
       "file": "app/src/main/java/com/example/data/Migrations.kt",
-      "lines": 79,
+      "lines": 146,
       "decls": [],
       "reached": false,
       "realIO": false,
@@ -2970,6 +2970,40 @@
         "OwnerGoalEntity",
         "TerminologyPreferenceEntity",
         "OwnerContextDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/ProjectDao.kt",
+      "lines": 98,
+      "decls": [
+        "ProjectDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/ProjectEntities.kt",
+      "lines": 142,
+      "decls": [
+        "ProjectEntity",
+        "ProjectAssociationEntity",
+        "ProjectMemoryEntity",
+        "ArtifactEntity",
+        "WorkerJobEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/ProjectRepository.kt",
+      "lines": 246,
+      "decls": [
+        "ProjectRepository"
       ],
       "reached": true,
       "realIO": false,
@@ -3207,7 +3241,7 @@
     },
     {
       "file": "app/src/main/java/com/example/ui/AppShell.kt",
-      "lines": 176,
+      "lines": 191,
       "decls": [
         "ShellRoute",
         "Home",
@@ -3220,6 +3254,7 @@
         "ExecutionFabric",
         "CapabilityFabric",
         "Memory",
+        "Library",
         "Settings",
         "AppShell"
       ],
@@ -3389,6 +3424,21 @@
       "reached": true,
       "realIO": false,
       "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/ProjectsScreen.kt",
+      "lines": 251,
+      "decls": [
+        "ProjectsScreen",
+        "ProjectDetail",
+        "Section",
+        "LibraryScreen"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "placeholder": 1
+      }
     },
     {
       "file": "app/src/main/java/com/example/ui/RecoveryShell.kt",
