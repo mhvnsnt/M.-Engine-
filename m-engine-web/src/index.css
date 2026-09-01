@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-surface: #0b1020;
+  --color-surface-raised: #121829;
+  --color-surface-sunken: #070b16;
+  --color-line: #1e2740;
+  --color-accent: #3b82f6;
+}
+
+html {
+  background: var(--color-surface);
+  color-scheme: dark;
+}
+
+body {
+  /* Keep content clear of the notch and the home indicator once installed. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+  overscroll-behavior-y: none;
+}
+
+/* iOS zooms the page when a font smaller than 16px receives focus. */
+input,
+textarea,
+select {
+  font-size: 16px;
+}

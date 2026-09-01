@@ -1,6 +1,7 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 
 plugins {
+  alias(libs.plugins.detekt)
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.google.devtools.ksp)
@@ -32,19 +33,34 @@ android {
     }
   }
 
+  // Both keystores are gitignored, so on CI and on any fresh clone neither file
+  // exists. Referencing one unconditionally made even `assembleDebug` fail at
+  // :app:validateSigningDebug — the build never reached packaging. Each config is
+  // now registered only when its keystore is actually present; otherwise the
+  // build type falls back to AGP's auto-generated debug key (debug) or produces
+  // an unsigned APK (release), which is far more useful than no APK at all.
+  //
+  // Credentials come from the environment, with the historical literals as a
+  // fallback so an existing local keystore keeps working unchanged.
+  val releaseKeystore = file("${rootDir}/release.keystore")
+  val debugKeystore = file("${rootDir}/debug.keystore")
+
   signingConfigs {
-    create("release") {
-      val keystorePath = "${rootDir}/release.keystore"
-      storeFile = file(keystorePath)
-      storePassword = "mengine123"
-      keyAlias = "release"
-      keyPassword = "mengine123"
+    if (releaseKeystore.exists()) {
+      create("release") {
+        storeFile = releaseKeystore
+        storePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: "mengine123"
+        keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "release"
+        keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: "mengine123"
+      }
     }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+    if (debugKeystore.exists()) {
+      create("debugConfig") {
+        storeFile = debugKeystore
+        storePassword = System.getenv("DEBUG_STORE_PASSWORD") ?: "android"
+        keyAlias = System.getenv("DEBUG_KEY_ALIAS") ?: "androiddebugkey"
+        keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "android"
+      }
     }
   }
 
@@ -53,9 +69,13 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      signingConfig = signingConfigs.findByName("release")
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    debug {
+      // findByName returns null when the keystore is absent; AGP then uses its
+      // own debug key, which is exactly what a debug build wants.
+      signingConfigs.findByName("debugConfig")?.let { signingConfig = it }
+    }
   }
   
   sourceSets {
@@ -170,4 +190,42 @@ dependencies {
   implementation("ch.acra:acra-core:5.11.3")
   implementation("ch.acra:acra-mail:5.11.3")
   implementation("ch.acra:acra-toast:5.11.3")
+}
+
+
+/**
+ * Static analysis gate.
+ *
+ * The CI workflow has always run `./gradlew lintDebug detekt`, but detekt was
+ * never declared anywhere in the build — so that step failed with "task not
+ * found" on every run, which is a large part of why this repository had zero
+ * green CI runs. Declaring it turns a permanently red step into a real gate.
+ *
+ * A baseline records the findings that already exist in 31k lines of code.
+ * Pre-existing issues do not block CI; anything NEW does. That is the only way
+ * to adopt static analysis on an existing codebase without either a
+ * thousand-issue wall or a check that silently passes.
+ */
+detekt {
+    buildUponDefaultConfig = true
+    // Findings present when the gate was introduced are recorded here rather
+    // than suppressed; the file is a visible, reviewable debt list.
+    baseline = file("detekt-baseline.xml")
+    parallel = true
+    source.setFrom(files("src/main/java", "src/test/java"))
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "11"
+    reports {
+        html.required.set(true)
+        // SARIF omitted: the HTML report is what a human reads, and each extra
+        // report format is another artifact to resolve at build time.
+        sarif.required.set(false)
+        txt.required.set(false)
+        md.required.set(false)
+    }
+}
+tasks.withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
+    jvmTarget = "11"
 }
