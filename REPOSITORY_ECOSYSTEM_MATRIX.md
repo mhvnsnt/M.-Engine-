@@ -1,7 +1,10 @@
 # REPOSITORY ECOSYSTEM MATRIX
 
-Generated 2026-09-01. Classification is **measured from repository contents**,
-not from repository names or descriptions.
+Generated 2026-09-01. Revised the same day to correct a dependency finding — see
+the correction under Bannon.
+
+Classification is **measured from repository contents**, not from repository
+names or descriptions.
 
 ---
 
@@ -50,17 +53,38 @@ of which is complete and one of which has never been compiled.**
    The 448 GLB and 202 FBX files are raw assets that the *web* engine loads;
    nothing has been imported into Unreal.
 
-3. **`BannonCore` cannot compile in its current state.** `Build.cs` adds include
-   paths for three vendored libraries:
+3. **CORRECTION — the dependencies are fine.** An earlier revision of this
+   document stated that `BannonCore` could not compile because
+   `unreal/ThirdParty/{JoltPhysics,GGPO,llama.cpp}` were empty. **That was
+   wrong, and the error was mine.**
+
+   All three are **git submodules**, correctly declared in `.gitmodules` with
+   pinned upstream commits:
+
    ```
-   unreal/ThirdParty/JoltPhysics    0 files
-   unreal/ThirdParty/GGPO           0 files
-   unreal/ThirdParty/llama.cpp      0 files
+   160000 commit 072675b1…  unreal/ThirdParty/JoltPhysics   -> jrouwe/JoltPhysics
+   160000 commit 7ddadef8…  unreal/ThirdParty/GGPO          -> pond3r/ggpo
+   160000 commit 736ffea4…  unreal/ThirdParty/llama.cpp     -> ggerganov/llama.cpp
+   160000 commit 765845d6…  native/third_party/JoltPhysics  -> jrouwe/JoltPhysics
    ```
-   All three directories exist and are **empty**. Any build would fail on
-   missing headers before reaching a single line of game code. This is a
-   concrete, fixable blocker and it is the first thing to resolve before any
-   Unreal work is attempted.
+
+   They appeared empty only because this audit used a `--depth 1` clone and
+   never ran `git submodule update --init`. **Verified by actually doing it:**
+   initialising JoltPhysics fetched 1,251 files and produced
+   `unreal/ThirdParty/JoltPhysics/Jolt/Jolt.h` — the exact include path
+   `Build.cs` adds now resolves.
+
+   This is not a defect. Pinned submodules against upstream repositories are
+   precisely the federation practice the open-source directive asks for: the
+   dependency is governed and version-locked without its source tree being
+   absorbed into the project.
+
+   **The one-line remedy for anyone cloning Bannon:**
+   `git submodule update --init --recursive`
+
+   *Lesson worth keeping: a shallow clone is not the repository. An audit
+   instrument that omits submodules will report correctly-federated
+   dependencies as missing.*
 
 4. **The project already tracks its own state honestly.** `unreal/CONVERSION.md`
    marks systems `[x]` landed / `[~]` laws ready / `[ ]` not started, and says
@@ -82,9 +106,10 @@ merge them into. The only honest options are:
 | Lyra-derived new project, Bannon systems ported in | Viable but a rewrite; Bannon's shared-`native/` design would have to be re-established |
 | Copy Lyra source into `unreal/Source` | **Not recommended.** Bannon's module is deliberately thin over `native/`; Lyra's framework assumes its own content and would fight that |
 
-**Prerequisite for all three: vendor the three empty ThirdParty libraries and
-get `BannonCore` to compile once.** Until a single successful compile exists,
-any statement about Lyra integration is unverifiable.
+**Prerequisite for all three: one successful `BannonCore` compile on a machine
+with UE 5.3.** The dependencies are already in place (see correction above); what
+is missing is an engine to compile against. Until a single successful compile
+exists, any statement about Lyra integration is unverifiable.
 
 ---
 
@@ -93,7 +118,7 @@ any statement about Lyra integration is unverifiable.
 | Capability | State | Evidence |
 | --- | --- | --- |
 | Unreal toolchain in M. Engine's execution environment | **CAPABILITY_GAP** | No `UnrealBuildTool`, `UnrealEditor` or engine installation reachable. Unreal is license-gated and ~100 GB; it cannot live in this container |
-| `BannonCore` compiles | **BLOCKED** | Three empty ThirdParty include paths |
+| `BannonCore` compiles | **UNVERIFIED** | Dependencies resolve once submodules are initialised; no UE 5.3 toolchain exists here to compile against |
 | Lyra federation | **NOT STARTED** | Correctly not attempted — see below |
 
 **Nothing about Unreal or Lyra is claimed as implemented or verified in this
