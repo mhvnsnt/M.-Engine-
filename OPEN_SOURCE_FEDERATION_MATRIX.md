@@ -44,16 +44,42 @@ not discovered late:
 | Canonical database | **PostgreSQL** | PostgreSQL Licence (permissive) | Remote service | Adapter connected, backend absent | Already the control plane's production ledger option |
 | Semantic retrieval | **pgvector** | PostgreSQL Licence | Postgres extension | **NOT INTEGRATED** | Rides the Postgres decision; no vector store exists yet |
 | Sandbox execution | *M. Engine native* | in-repo | In-process | **REAL_AND_CONNECTED** | The only provider needing no external runtime |
+| Game engine build | **Unreal Engine 5.3+** | Epic EULA (not open source) | **REMOTE_WORKER** via `tools/unreal-worker` | **Boundary VERIFIED, engine CAPABILITY_GAP** | Licence-gated and ~100 GB: it cannot live on a phone or in a container. The worker is written and proven; no engine has been reached |
+| Game gameplay foundation | **Lyra Starter Game** | Epic EULA, owner-authorised | REFERENCE / project baseline | **NOT STARTED** | Content-heavy; useful precisely because Bannon lacks a content layer. Audit before adopting |
 
 ### Evaluated and deliberately deferred
 
 | Capability | Candidates | Decision |
 | --- | --- | --- |
-| Telemetry | OpenTelemetry (Apache-2.0) | Deferred. The right substrate for §12, but there is no worker fleet emitting spans yet — instrumenting an empty fabric measures nothing |
+| Telemetry | OpenTelemetry (Apache-2.0) | Deferred. The right substrate, but there is no worker fleet emitting spans yet — instrumenting an empty fabric measures nothing. The Unreal worker is the first real worker; revisit once a second exists |
 | Code editor | Monaco (MIT), CodeMirror (MIT) | Deferred to §14. Monaco is the VS Code editor core and is the obvious pick; it needs a workspace model first |
 | Coding agents (alt) | Aider (Apache-2.0) | Not selected. Excellent CLI-driven agent, but process-oriented rather than service-oriented — OpenHands' HTTP API is the better federation boundary |
 | Workflow (alt) | Temporal (MIT) | Not selected. More mature than Hatchet but materially heavier to self-host; revisit if Hatchet proves insufficient |
 | 3D / media | Blender (GPL-2.0+), FFmpeg (LGPL/GPL) | Deferred to §18. Both are *tools invoked as processes*, not libraries to link — which keeps their copyleft at arm's length. That distinction must be preserved |
+
+---
+
+## Embedding modes — be aggressive about federation, selective about embedding
+
+Owner correction, recorded because it prevents a predictable failure: pulling
+"everything possible" into the source tree produces dependency hell, licence
+conflicts and partial copies of fifty unrelated applications. The rule is
+aggressive *federation*, selective *embedding*.
+
+| System | Mode | Never |
+| --- | --- | --- |
+| Unreal / Lyra | source/project on the **Unreal worker** | not in the Android app |
+| Blender | external application **worker** | not embedded |
+| OpenHands | **service / worker** | not vendored |
+| Hatchet or Temporal | durable control-plane **service** | not reimplemented |
+| Playwright | **browser worker** | not in-app |
+| Ghidra | authorised-analysis **worker** | not in the normal coding loop |
+| FFmpeg | **media worker** capability | process, not linked library — which also keeps its copyleft at arm's length |
+| Postgres + pgvector | canonical server-side **persistence/retrieval** | not a second authority |
+| OpenTelemetry | observability **substrate** | not before workers exist to emit spans |
+| ComfyUI | optional generative-media **worker** | not copied into the source tree |
+
+M. Engine governs. It does not absorb.
 
 ---
 

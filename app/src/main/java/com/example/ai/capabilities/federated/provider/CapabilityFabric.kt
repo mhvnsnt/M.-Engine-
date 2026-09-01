@@ -50,6 +50,7 @@ class CapabilityFabric(
         registry.register(PlaywrightBrowserProvider(PlaywrightClient(endpoints.playwright)))
         registry.register(MinIOStorageProvider(MinIOClient(endpoints.minio)))
         registry.register(PostgresDatabaseProvider(PostgresClient(endpoints.postgresHost, endpoints.postgresPort)))
+        registry.register(UnrealExecutionProvider(UnrealWorkerClient(endpoints.unrealWorker, endpoints.unrealWorkerToken)))
 
         // The native fallback runs in-process, so it is the one provider that is
         // available with no external runtime at all.
@@ -126,6 +127,12 @@ data class FabricEndpoints(
     val minio: String = "http://localhost:9000",
     val postgresHost: String = "localhost",
     val postgresPort: Int = 5432,
+    /**
+     * Unreal runs on a separate machine by necessity — the engine is
+     * licence-gated and far too large for a phone or a container.
+     */
+    val unrealWorker: String = "http://localhost:8770",
+    val unrealWorkerToken: String = "",
 )
 
 /**
