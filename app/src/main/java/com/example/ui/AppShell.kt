@@ -13,6 +13,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.*
 import com.example.ai.capabilities.ecology.RemoteControlPlaneRepository
+import com.example.ai.capabilities.federated.provider.CapabilityFabric as CapabilityFabricRuntime
 import kotlinx.coroutines.launch
 
 sealed class ShellRoute(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
@@ -24,6 +25,7 @@ sealed class ShellRoute(val route: String, val title: String, val icon: androidx
     object Workspaces : ShellRoute("workspaces", "Workspaces", Icons.Default.Workspaces)
     object Agents : ShellRoute("agents", "Agents", Icons.Default.SmartToy)
     object ExecutionFabric : ShellRoute("observatory", "Execution Fabric", Icons.Default.Visibility)
+    object CapabilityFabric : ShellRoute("capability_fabric", "Capability Fabric", Icons.Default.Hub)
     object Memory : ShellRoute("evidence", "Memory / Library", Icons.Default.CheckCircle)
     object Settings : ShellRoute("settings", "Settings", Icons.Default.Settings)
 }
@@ -34,6 +36,10 @@ fun AppShell(viewModel: ChatViewModel, workspaceViewModel: WorkspaceViewModel) {
     val isOnboardingComplete by viewModel.settingsRepository.isOnboardingCompleteFlow.collectAsStateWithLifecycle(initialValue = false)
     val coroutineScope = rememberCoroutineScope()
     val controlPlaneRepository = remember { RemoteControlPlaneRepository() }
+
+    // Constructs the federated provider layer. Until this existed, the whole
+    // federated/provider package was unreachable from any entry point.
+    val capabilityFabric = remember { CapabilityFabricRuntime() }
 
     if (!isOnboardingComplete) {
         OnboardingScreen(onComplete = {
@@ -61,6 +67,7 @@ fun AppShell(viewModel: ChatViewModel, workspaceViewModel: WorkspaceViewModel) {
         ShellRoute.Workspaces,
         ShellRoute.Agents,
         ShellRoute.ExecutionFabric,
+        ShellRoute.CapabilityFabric,
         ShellRoute.Memory,
         ShellRoute.Settings
     )
@@ -146,6 +153,9 @@ fun AppShell(viewModel: ChatViewModel, workspaceViewModel: WorkspaceViewModel) {
                 }
                 composable(ShellRoute.ExecutionFabric.route) {
                     ObservatoryScreen(repository = controlPlaneRepository)
+                }
+                composable(ShellRoute.CapabilityFabric.route) {
+                    CapabilityFabricScreen(fabric = capabilityFabric)
                 }
                 composable(ShellRoute.Memory.route) {
                     EvidenceScreen(viewModel = viewModel)

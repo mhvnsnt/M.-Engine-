@@ -1,0 +1,3507 @@
+{
+  "rows": [
+    {
+      "file": "app/src/main/java/com/example/MainActivity.kt",
+      "lines": 90,
+      "decls": [
+        "MainActivity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/MengineApplication.kt",
+      "lines": 16,
+      "decls": [
+        "MengineApplication"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/AgentModels.kt",
+      "lines": 40,
+      "decls": [
+        "PermissionLevel",
+        "ToolRequest",
+        "AgentStep",
+        "AgentPlan",
+        "ToolResult",
+        "AgentResult"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/AgentOrchestrator.kt",
+      "lines": 205,
+      "decls": [
+        "AgentOrchestrator"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/CodeJarvis.kt",
+      "lines": 224,
+      "decls": [
+        "CodeJarvis"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/CodingTools.kt",
+      "lines": 301,
+      "decls": [
+        "CodingTools"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/EmbeddingEngine.kt",
+      "lines": 131,
+      "decls": [
+        "EmbeddingEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/EvidenceEngine.kt",
+      "lines": 109,
+      "decls": [
+        "EvidenceType",
+        "EvidenceVerdict",
+        "EvidenceLevel",
+        "EvidenceRecord",
+        "EvidenceEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/FailureObservatory.kt",
+      "lines": 66,
+      "decls": [
+        "FailureCategory",
+        "FailureCluster",
+        "FailureObservatory"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/GithubMonitorWorker.kt",
+      "lines": 61,
+      "decls": [
+        "GithubMonitorWorker"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/JobManager.kt",
+      "lines": 114,
+      "decls": [
+        "JobManager"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/LindyEngine.kt",
+      "lines": 122,
+      "decls": [
+        "LindyEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/LlamaEngine.kt",
+      "lines": 18,
+      "decls": [
+        "LlamaEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/ReflectionEngine.kt",
+      "lines": 71,
+      "decls": [
+        "ReflectionEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/TTSEngine.kt",
+      "lines": 51,
+      "decls": [
+        "TTSEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/TreeSitterEngine.kt",
+      "lines": 99,
+      "decls": [
+        "TreeSitterEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/VoiceRecognizer.kt",
+      "lines": 70,
+      "decls": [
+        "VoiceRecognizer"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/WhisperEngine.kt",
+      "lines": 53,
+      "decls": [
+        "WhisperEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "simulate": 1,
+        "placeholder": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/AcquisitionEngine.kt",
+      "lines": 220,
+      "decls": [
+        "AcquisitionResultStatus",
+        "CompetitionDecision",
+        "AcquisitionResult",
+        "AcquisitionEngine",
+        "AcquisitionEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/AgencyLedger.kt",
+      "lines": 48,
+      "decls": [
+        "AgencyDecision",
+        "AgencyLedgerEntry",
+        "AgencyLedger",
+        "InMemoryAgencyLedger"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/AnthropicDirectProvider.kt",
+      "lines": 290,
+      "decls": [
+        "AnthropicDirectProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/AutonomousAgencyRuntime.kt",
+      "lines": 167,
+      "decls": [
+        "AgencyContext",
+        "AgencyResult",
+        "AutonomousAgencyRuntime",
+        "AutonomousAgencyRuntimeImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "simulate": 3
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/AutonomousSelfDevelopmentEngine.kt",
+      "lines": 478,
+      "decls": [
+        "AutonomousSelfDevelopmentResult",
+        "AutonomousSelfDevelopmentEngine",
+        "AutonomousSelfDevelopmentEngineImpl"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "mock": 1,
+        "stub": 3,
+        "placeholder": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/AutonomousSelfImprovementBenchmark.kt",
+      "lines": 146,
+      "decls": [
+        "SelfImprovementResult",
+        "AutonomousSelfImprovementBenchmark"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "simulate": 3
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/AutonomousWorker.kt",
+      "lines": 82,
+      "decls": [
+        "WorkerRole",
+        "WorkerCheckpoint",
+        "WorkerDescriptor",
+        "AutonomousWorkerTask",
+        "AutonomousWorkerTaskResult",
+        "AutonomousWorker"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/AutonomousWorkerPool.kt",
+      "lines": 465,
+      "decls": [
+        "AutonomousWorkerPool",
+        "AutonomousCodingWorker",
+        "AutonomousRepoAnalysisWorker",
+        "AutonomousResearchWorker",
+        "AutonomousBrowserWorker",
+        "AutonomousTerminalWorker",
+        "AutonomousDeviceWorker",
+        "AutonomousVisualVideoWorker",
+        "AutonomousTestingWorker",
+        "AutonomousSecurityWorker",
+        "AutonomousDocReviewWorker",
+        "AutonomousWorkerPoolImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/CapabilityBenchmark.kt",
+      "lines": 85,
+      "decls": [
+        "BenchmarkTestDefinition",
+        "BenchmarkResultMetrics",
+        "BenchmarkComparison",
+        "CapabilityBenchmark",
+        "CapabilityBenchmarkImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/CapabilityGraph.kt",
+      "lines": 90,
+      "decls": [
+        "CapabilityDomain",
+        "HarvestIntegrationMode",
+        "ImplementationDetails",
+        "CapabilityNode",
+        "HarvestProvenance",
+        "CapabilityGraphDatabase",
+        "CapabilityGraphDatabaseImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/CapabilityHarvestMatrix.kt",
+      "lines": 28,
+      "decls": [
+        "ImplementationRecord",
+        "IntegrationDecision",
+        "CapabilityHarvestMatrix",
+        "CapabilityHarvestMatrixImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/CapabilityRegistry.kt",
+      "lines": 43,
+      "decls": [
+        "CapabilityType",
+        "CapabilityStatus",
+        "CapabilityProvider",
+        "CapabilityRegistry",
+        "CapabilityRegistryImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/CiCdPipeline.kt",
+      "lines": 109,
+      "decls": [
+        "CiCdState",
+        "CiCdResult",
+        "CiCdPipeline",
+        "LocalDeviceCiCdPipeline"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/CognitiveKernel.kt",
+      "lines": 64,
+      "decls": [
+        "CognitiveState",
+        "RiskLevel",
+        "CapabilityProfile",
+        "ExecutionEvidence",
+        "CognitiveKernel"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/CognitiveKernelImpl.kt",
+      "lines": 94,
+      "decls": [
+        "InvalidCognitiveTransitionException",
+        "CognitiveKernelImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/DevelopmentProvenance.kt",
+      "lines": 257,
+      "decls": [
+        "DiscoveryRecord",
+        "ObservedDeficiency",
+        "PreFixEvidenceRecord",
+        "ProvenanceResearchCandidate",
+        "CandidateBenchmarkResult",
+        "ComparisonMatrix",
+        "ProvenanceDecision",
+        "ProvenanceImplementationRecord",
+        "PostFixEvidenceRecord",
+        "RegressionProofRecord",
+        "SecurityVerificationRecord",
+        "CapabilityClassificationRecord",
+        "DevelopmentProvenance",
+        "ProvenanceLedger",
+        "InMemoryProvenanceLedger"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/DeviceGateway.kt",
+      "lines": 47,
+      "decls": [
+        "DeviceGateway",
+        "RemoteDeviceGateway"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1,
+        "notImplemented": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/DiscoveryEngine.kt",
+      "lines": 37,
+      "decls": [
+        "IssueSeverity",
+        "IssueCategory",
+        "DiscoveredIssue",
+        "DiscoveryEngine",
+        "DiscoveryEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/DurableAutonomousScheduler.kt",
+      "lines": 327,
+      "decls": [
+        "MissionScheduleStatus",
+        "ScheduledMissionRecord",
+        "MissionExecutionResult",
+        "SchedulerStatusReport",
+        "DurableAutonomousScheduler",
+        "DurableAutonomousSchedulerImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/EvidenceEngine.kt",
+      "lines": 188,
+      "decls": [
+        "EvidenceType",
+        "EvidenceLevel",
+        "EvidenceStatus",
+        "EvidenceScope",
+        "StructuredClaim",
+        "EvidenceRecord",
+        "EvidenceAssuranceEngine",
+        "EvidenceAssuranceEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/FailureObservatory.kt",
+      "lines": 146,
+      "decls": [
+        "FailureSource",
+        "FailureEvent",
+        "FailureCluster",
+        "AutonomousFailureMission",
+        "FailureObservatory",
+        "FailureObservatoryImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/FirebaseJobStateRepository.kt",
+      "lines": 71,
+      "decls": [
+        "FirebaseJobStateRepository"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/FirebaseSandboxManager.kt",
+      "lines": 76,
+      "decls": [
+        "FirebaseSandboxManager"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/GeminiProvider.kt",
+      "lines": 307,
+      "decls": [
+        "GeminiProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "placeholder": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/GitHubService.kt",
+      "lines": 54,
+      "decls": [
+        "RepositoryRef",
+        "RepoMetadata",
+        "PRDetails",
+        "CIResult",
+        "IssueDetails",
+        "GitHubService"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/GitHubServiceImpl.kt",
+      "lines": 125,
+      "decls": [
+        "GitHubServiceImpl"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ImprovementPrioritizationEngine.kt",
+      "lines": 100,
+      "decls": [
+        "ImprovementCandidate",
+        "ScoredImprovementCandidate",
+        "ImprovementPrioritizationEngine",
+        "ImprovementPrioritizationEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "simulate": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/IndependentVerifier.kt",
+      "lines": 38,
+      "decls": [
+        "IndependentVerifier"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/JGitRepositoryManager.kt",
+      "lines": 57,
+      "decls": [
+        "JGitRepositoryManager"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/JobStateRepository.kt",
+      "lines": 61,
+      "decls": [
+        "JobStateRepository",
+        "FirebaseJobStateRepositoryMock"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/MissionEngine.kt",
+      "lines": 59,
+      "decls": [
+        "MissionStatus",
+        "MissionContext",
+        "MissionGoal",
+        "Subtask",
+        "Mission",
+        "MissionEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/MissionEngineImpl.kt",
+      "lines": 170,
+      "decls": [
+        "MissionEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "mock": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ModelProvider.kt",
+      "lines": 137,
+      "decls": [
+        "ModelToolDefinition",
+        "ModelToolCall",
+        "ModelMessage",
+        "ModelRequest",
+        "ModelResponse",
+        "ModelStream",
+        "ProviderStatus",
+        "ProviderHealthStatus",
+        "SpeedTier",
+        "CostTier",
+        "ModelCapabilities",
+        "EndpointConfig",
+        "ModelProvider",
+        "LocalInferenceProvider",
+        "ExternalAgentRuntime",
+        "RemoteSandbox",
+        "CostProfile",
+        "CodingAgentRuntime"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ModelRouter.kt",
+      "lines": 527,
+      "decls": [
+        "ProviderBenchmarkReport",
+        "ProviderStatusEntry",
+        "IntelligenceStatusReport",
+        "WorkerSelectionResult",
+        "ModelRouter"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/MultimodalVerification.kt",
+      "lines": 93,
+      "decls": [
+        "ScreenObservation",
+        "VideoSessionTrace",
+        "InteractionEvent",
+        "GameActuator",
+        "AppActuator",
+        "MultimodalVerificationEngine",
+        "MultimodalVerificationEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/OfflineFallbackProvider.kt",
+      "lines": 168,
+      "decls": [
+        "OfflineFallbackProvider",
+        "QueuedTask",
+        "MissionCheckpoint"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/OllamaProvider.kt",
+      "lines": 212,
+      "decls": [
+        "OllamaProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/OpenAiCompatibleProvider.kt",
+      "lines": 296,
+      "decls": [
+        "OpenAiCompatibleProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/OpenRouterProvider.kt",
+      "lines": 289,
+      "decls": [
+        "OpenRouterProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/OpportunityEngine.kt",
+      "lines": 33,
+      "decls": [
+        "Opportunity",
+        "OpportunityEngine",
+        "OpportunityEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/PersonalContextEngine.kt",
+      "lines": 30,
+      "decls": [
+        "MemoryCategory",
+        "ContextMemory",
+        "PersonalContextEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/PersonalContextEngineImpl.kt",
+      "lines": 84,
+      "decls": [
+        "PersonalContextEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/PersonalEvolutionEngine.kt",
+      "lines": 59,
+      "decls": [
+        "MemoryProvenance",
+        "UserInteraction",
+        "PatternHypothesis",
+        "MemoryProposal",
+        "UserTeaching",
+        "PersonalEvolutionEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/Phase20Bootstrap.kt",
+      "lines": 36,
+      "decls": [
+        "Phase20Bootstrap"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/Phase20System.kt",
+      "lines": 88,
+      "decls": [
+        "RealityEvidenceLevel",
+        "RealityEvidenceRecord",
+        "StrictEvidenceEngine",
+        "BugType",
+        "ActuatorType",
+        "AutomaticObservationRouter",
+        "MemoryProvenance",
+        "ContextFacet",
+        "UserContextMemory",
+        "GitHubOAuthConnector"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/PhysicalActuators.kt",
+      "lines": 100,
+      "decls": [
+        "AdbPhysicalAppActuator"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ProviderErrorClassifier.kt",
+      "lines": 168,
+      "decls": [
+        "ProviderErrorKind",
+        "ProviderErrorInfo",
+        "ProviderErrorClassifier"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ProviderMetricsTracker.kt",
+      "lines": 171,
+      "decls": [
+        "ProviderMetrics",
+        "ProviderMetricsTracker"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RealityPolicy.kt",
+      "lines": 71,
+      "decls": [
+        "RealityClassification",
+        "RealityPolicy",
+        "SimulationDetector"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "TODO": 1,
+        "mock": 5,
+        "stub": 3,
+        "simulate": 6,
+        "placeholder": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RecursiveAuditor.kt",
+      "lines": 62,
+      "decls": [
+        "RecursiveAuditor",
+        "RecursiveAuditorImpl"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RecursiveRepoAuditor.kt",
+      "lines": 104,
+      "decls": [
+        "RecursiveRepoAuditor",
+        "RecursiveRepoAuditorImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RegressionEngine.kt",
+      "lines": 41,
+      "decls": [
+        "RegressionTest",
+        "RegressionSuiteResult",
+        "RegressionEngine",
+        "RegressionEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RegressionMemory.kt",
+      "lines": 106,
+      "decls": [
+        "DurableRegressionTest",
+        "RegressionScenario",
+        "RegressionMemory",
+        "RegressionMemoryEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RemoteSandbox.kt",
+      "lines": 35,
+      "decls": [
+        "SandboxConfig",
+        "SandboxLimits",
+        "NetworkPolicy",
+        "ExecutionResult",
+        "RemoteSandboxManager"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RemoteWorkerOrchestrator.kt",
+      "lines": 45,
+      "decls": [
+        "RemoteWorkerOrchestrator",
+        "RemoteWorkerType",
+        "WorkerStatus",
+        "DefaultRemoteWorkerOrchestrator"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RepositoryGraphEngine.kt",
+      "lines": 369,
+      "decls": [
+        "SymbolKind",
+        "CodeSymbol",
+        "FileAnalysis",
+        "ModuleNode",
+        "CrossRepoLink",
+        "RepositoryGraph",
+        "RepositoryGraphEngine",
+        "RepositoryGraphEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RepositoryIntelligenceEngine.kt",
+      "lines": 74,
+      "decls": [
+        "ProjectType",
+        "ProjectIntelligence",
+        "RepositoryIntelligenceEngine",
+        "RepositoryIntelligenceEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ResearchEngine.kt",
+      "lines": 87,
+      "decls": [
+        "InventoryState",
+        "IntegrationMode",
+        "ProvenanceRecord",
+        "ResearchCandidate",
+        "CandidateEvaluation",
+        "ResearchRecommendation",
+        "ResearchEngine",
+        "CapabilityInventoryItem"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ResearchEngineImpl.kt",
+      "lines": 91,
+      "decls": [
+        "ResearchEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ResourceGovernanceEngine.kt",
+      "lines": 63,
+      "decls": [
+        "ResourceBudget",
+        "ResourceConstraint",
+        "ResourceGovernanceEngine",
+        "ResourceGovernanceEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/RuntimeVerificationEngine.kt",
+      "lines": 63,
+      "decls": [
+        "ObservationMode",
+        "RuntimeActionType",
+        "RuntimeAction",
+        "RuntimeSession",
+        "BuildResult",
+        "RuntimeObservation",
+        "ActionResult",
+        "TestScenario",
+        "ReproductionResult",
+        "RuntimeEvidence",
+        "Diagnosis",
+        "VerificationResult",
+        "RuntimeVerificationEngine",
+        "VisualInteractionRuntime",
+        "RuntimeVerificationEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/SecurityScanner.kt",
+      "lines": 127,
+      "decls": [
+        "SecurityViolation",
+        "SecurityAuditResult",
+        "SecurityScanner",
+        "SecurityScannerImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/SelfHealingLoop.kt",
+      "lines": 104,
+      "decls": [
+        "HealingStatus",
+        "HealingResult",
+        "SelfHealingLoop",
+        "SelfHealingLoopImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/SelfImprovementExperiment.kt",
+      "lines": 81,
+      "decls": [
+        "SelfImprovementExperiment",
+        "SelfImprovementExperimentImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/UniversalRealityLoop.kt",
+      "lines": 50,
+      "decls": [
+        "LoopStage",
+        "FailureType",
+        "ObservationStrategy",
+        "ObservationRouter",
+        "DefaultObservationRouter",
+        "UniversalRealityLoop"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/UniversalRealityLoopImpl.kt",
+      "lines": 321,
+      "decls": [
+        "StageExecutionResult",
+        "UniversalRealityLoopImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/WorkerBenchmarkHarness.kt",
+      "lines": 62,
+      "decls": [
+        "WorkerType",
+        "WorkerProfile",
+        "WorkerTask",
+        "WorkerPerformanceResult",
+        "WorkerBenchmarkEngine",
+        "WorkerBenchmarkEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/WorkerPool.kt",
+      "lines": 125,
+      "decls": [
+        "TaskRequirements",
+        "WorkerSelector",
+        "CodingWorkerRuntime",
+        "AiderRuntime",
+        "MiniSWEAgentRuntime",
+        "OpenHandsRuntime",
+        "WorkerSelectorImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/WorkloadType.kt",
+      "lines": 118,
+      "decls": [
+        "WorkloadType",
+        "WorkloadBenchmarkScore",
+        "WorkloadBenchmarkMatrix"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/acquisition/CapabilityAcquisitionEngine.kt",
+      "lines": 103,
+      "decls": [
+        "CapabilityType",
+        "AcquisitionStatus",
+        "MissingCapability",
+        "AcquisitionResult",
+        "CapabilityAcquisitionEngine",
+        "CapabilityAcquisitionEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/acquisition/CapabilityAcquisitionManager.kt",
+      "lines": 133,
+      "decls": [
+        "CapabilityAcquisitionManager",
+        "NativeWorkerFallbackSelector"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/acquisition/CapabilityAcquisitionModels.kt",
+      "lines": 85,
+      "decls": [
+        "ConnectionMode",
+        "CapabilityLifecycleState",
+        "DiscoveryState",
+        "PhysicalProbeObservation",
+        "CapabilityObservation"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/acquisition/PhysicalRuntimeDiscovery.kt",
+      "lines": 172,
+      "decls": [
+        "PhysicalRuntimeDiscovery",
+        "CommandResult"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/acquisition/RunProbes.kt",
+      "lines": 11,
+      "decls": [
+        "main"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/boundary/AgencyBoundaryState.kt",
+      "lines": 40,
+      "decls": [
+        "AgencyBoundaryState",
+        "AgencyBoundaryEvent",
+        "AgencyBoundaryStateMachine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/boundary/AuthorizationState.kt",
+      "lines": 34,
+      "decls": [
+        "AuthorizationStatus",
+        "AutonomyLevel",
+        "AuthorizationEvidence",
+        "AuthorizationAssessment"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/boundary/GraduatedAuthorizationEngine.kt",
+      "lines": 47,
+      "decls": [
+        "GraduatedAuthorizationEngine",
+        "GraduatedAuthorizationEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/connections/ConnectionProvider.kt",
+      "lines": 61,
+      "decls": [
+        "ConnectionStatus",
+        "RealityClassification",
+        "CapabilityType",
+        "AuthorizationResult",
+        "Success",
+        "Error",
+        "PendingUserAction",
+        "VerificationResult",
+        "Success",
+        "Error",
+        "ConnectionProvider"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "mock": 1,
+        "stub": 1,
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/connections/ConnectorManager.kt",
+      "lines": 57,
+      "decls": [
+        "ConnectorManager"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/connections/FirebaseConnectionProvider.kt",
+      "lines": 57,
+      "decls": [
+        "FirebaseConnectionProvider"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/connections/GitHubActionsConnectionProvider.kt",
+      "lines": 51,
+      "decls": [
+        "GitHubActionsConnectionProvider"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/connections/GitHubConnectionProvider.kt",
+      "lines": 75,
+      "decls": [
+        "GitHubConnectionProvider"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/connections/OpenRouterConnectionProvider.kt",
+      "lines": 52,
+      "decls": [
+        "OpenRouterConnectionProvider"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/AutonomousOpportunityLoop.kt",
+      "lines": 82,
+      "decls": [
+        "AutonomousOpportunityLoop",
+        "AutonomousOpportunityLoopImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/AutonomousOpportunityQueue.kt",
+      "lines": 70,
+      "decls": [
+        "OpportunityState",
+        "QueuedOpportunity",
+        "AutonomousOpportunityQueue",
+        "AutonomousOpportunityQueueImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/ConstructiveNoveltyEngine.kt",
+      "lines": 22,
+      "decls": [
+        "ConstructiveNoveltyEngine",
+        "ConstructiveNoveltyEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/DirectedAgencyEngine.kt",
+      "lines": 40,
+      "decls": [
+        "Opportunity",
+        "DirectedAgencyEngine",
+        "DirectedAgencyEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/GoalInterpretationEngine.kt",
+      "lines": 30,
+      "decls": [
+        "GoalInterpretationEngine",
+        "GoalInterpretationEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/GoalTensionEngine.kt",
+      "lines": 52,
+      "decls": [
+        "GoalTension",
+        "GoalTensionEngine",
+        "GoalTensionEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/OpportunityCompetitionEngine.kt",
+      "lines": 44,
+      "decls": [
+        "EvaluatedOpportunity",
+        "OpportunityCompetitionEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/OwnerAwarenessProtocol.kt",
+      "lines": 44,
+      "decls": [
+        "AwarenessThreshold",
+        "OwnerAwarenessProtocol",
+        "OwnerAwarenessProtocolImpl"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/OwnerObjectiveGraph.kt",
+      "lines": 59,
+      "decls": [
+        "ObjectiveSignal",
+        "ObjectiveNode",
+        "OwnerObjectiveGraph",
+        "OwnerObjectiveGraphImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/directed/PostActionReflectionEngine.kt",
+      "lines": 50,
+      "decls": [
+        "NextStepAssessment",
+        "PostActionReflectionEngine",
+        "PostActionReflectionEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/AtomicBudgetGovernor.kt",
+      "lines": 131,
+      "decls": [
+        "BudgetReservation",
+        "AtomicBudgetGovernor"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/AutonomousExecutionLoop.kt",
+      "lines": 239,
+      "decls": [
+        "LoopResult",
+        "AutonomousExecutionLoop"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/AutonomousMetabolism.kt",
+      "lines": 119,
+      "decls": [
+        "EcologyMetabolismWorker",
+        "AutonomousRuntime"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/AutonomyControl.kt",
+      "lines": 28,
+      "decls": [
+        "AutonomyState",
+        "AutonomyControlPlane"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/BuildEvidence.kt",
+      "lines": 14,
+      "decls": [
+        "BuildEvidence"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/CapabilityFabric.kt",
+      "lines": 1582,
+      "decls": [
+        "CostMetrics",
+        "CapabilityResult",
+        "AgencyCapability",
+        "GitHubWorkerCapability",
+        "WebResearchCapability",
+        "DocumentationCapability",
+        "SandboxExecutionCapability",
+        "VideoResearchCapability",
+        "DatabaseCapability",
+        "LocalModelCapability",
+        "RemoteModelCapability",
+        "CodingWorkerCapability",
+        "FederatedCapabilityRegistry"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/CapabilityReality.kt",
+      "lines": 249,
+      "decls": [
+        "CapabilityState",
+        "CapabilityTransitionRecord",
+        "FailureClassification",
+        "CircuitState",
+        "CapabilityProbeRecord",
+        "CapabilityRealityScore",
+        "CapabilityRealityRankingItem",
+        "RealitySweepReport",
+        "EpistemicConfidenceMetrics",
+        "TelemetryThresholdsPolicy",
+        "HealthCheckResult",
+        "CapabilityRuntimeState",
+        "WorkerJobState",
+        "WorkerJob",
+        "AutonomousCycleState",
+        "CapabilityTelemetry",
+        "CausalDevelopmentRecord"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/CapabilityRealitySweepEngine.kt",
+      "lines": 135,
+      "decls": [
+        "CapabilityRealitySweepEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/CapabilityTaskRouter.kt",
+      "lines": 130,
+      "decls": [
+        "CapabilityTaskRouter"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/ChangeDetectionEngine.kt",
+      "lines": 98,
+      "decls": [
+        "ChangeDetectionEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/CodingRealityTrial.kt",
+      "lines": 104,
+      "decls": [
+        "CodingTrialAuthorization",
+        "TrialReliabilityState",
+        "CodingTrialEvidence",
+        "CodingRealityTrialOrchestrator"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/DeepRepositoryInspectionEngine.kt",
+      "lines": 220,
+      "decls": [
+        "DeepRepositoryInspectionEngine"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/DependencyRelationship.kt",
+      "lines": 54,
+      "decls": [
+        "RelationshipCategory",
+        "ProjectRelationship",
+        "EdgeStatus",
+        "EpistemicClassification",
+        "ProbeType",
+        "FalsificationProbe",
+        "DependencyRelationship"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/EcosystemDiscoverySweep.kt",
+      "lines": 149,
+      "decls": [
+        "EcosystemDiscoverySweep"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/EvidenceLifecycle.kt",
+      "lines": 32,
+      "decls": [
+        "ChangeImpact",
+        "EvidenceStatus",
+        "EvidenceTransferDecision",
+        "ReinspectionAction",
+        "MeaningfulChange",
+        "ChangeDelta"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/EvidenceOfAction.kt",
+      "lines": 56,
+      "decls": [
+        "EvidenceOfAction",
+        "RepositoryObserved",
+        "BuildExecuted",
+        "ResearchPerformed",
+        "ToolingAnomalyObserved",
+        "CapabilityGapRecorded",
+        "FederatedReconciliationEvent"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/EvidenceReconciliationEngine.kt",
+      "lines": 181,
+      "decls": [
+        "ReconciliationOutcome",
+        "FederatedEvidenceRecord",
+        "Contradiction",
+        "EvidenceReconciliationEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/ExecutionBudget.kt",
+      "lines": 40,
+      "decls": [
+        "ExecutionBudget"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/FederatedPhysicalWorkerIntegration.kt",
+      "lines": 119,
+      "decls": [
+        "ExternalWorkerType",
+        "PhysicalWorkerJob",
+        "PhysicalWorkerResult",
+        "PhysicalWorkerAdapter",
+        "NativeSandboxWorkerAdapter",
+        "OpenHandsAdapter",
+        "FederatedWorkerBroker"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "mock": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/GeospatialContextEngine.kt",
+      "lines": 78,
+      "decls": [
+        "EmpiricalGeospatialData",
+        "PersonalPreferenceAlignment",
+        "SymbolicGeospatialData",
+        "GeospatialEvaluationResult",
+        "GeospatialContextEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/GeospatialFederationEngine.kt",
+      "lines": 71,
+      "decls": [
+        "FederatedGeospatialSynthesis",
+        "GeospatialFederationEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/GeospatialIdentityEngine.kt",
+      "lines": 58,
+      "decls": [
+        "IdentityVerificationState",
+        "PrecisionLevel",
+        "GeospatialAnchor",
+        "PhysicalOwnerIdentity",
+        "GeospatialIdentityEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/GeospatialSymbolicEngine.kt",
+      "lines": 119,
+      "decls": [
+        "PlanetaryPosition",
+        "PlanetaryLine",
+        "GeospatialOffsetCalculation",
+        "SymbolicCalculationResult",
+        "GeospatialSymbolicEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1,
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/GoalEcologyEngine.kt",
+      "lines": 53,
+      "decls": [
+        "EcologyCategory",
+        "EcologyNode",
+        "GoalEcologyEngine",
+        "GoalEcologyEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/IdempotencyLedger.kt",
+      "lines": 24,
+      "decls": [
+        "ExecutionState",
+        "IdempotencyLedger"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/InspectionState.kt",
+      "lines": 22,
+      "decls": [
+        "InspectionLevel",
+        "ExecutionInspectionStatus",
+        "InspectionState"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/KnowledgeClaim.kt",
+      "lines": 16,
+      "decls": [
+        "ClaimType",
+        "KnowledgeClaim"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/LocalCapabilityAdapter.kt",
+      "lines": 46,
+      "decls": [
+        "LocalCapabilityAdapter"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/MetabolismWakeRecord.kt",
+      "lines": 34,
+      "decls": [
+        "WakeScheduleStatus",
+        "WakeResult",
+        "MetabolismWakeRecord"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/OpportunityDiscoveryEngine.kt",
+      "lines": 33,
+      "decls": [
+        "Opportunity",
+        "OpportunityDiscoveryEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "mock": 3
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/PhysicalBrowserWorkerIntegration.kt",
+      "lines": 25,
+      "decls": [
+        "PhysicalBrowserWorkerAdapter"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/ProjectEcologyEngine.kt",
+      "lines": 58,
+      "decls": [
+        "ProjectNode",
+        "ProjectEcologyEngine",
+        "ProjectEcologyEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/ProjectEcologyProfile.kt",
+      "lines": 29,
+      "decls": [
+        "ProjectEcologyProfile"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/ProjectHealth.kt",
+      "lines": 66,
+      "decls": [
+        "ProjectHealth",
+        "HealthState",
+        "DependencyState",
+        "ActivityState",
+        "IssuePressureState",
+        "RelevanceState",
+        "CapabilityGap",
+        "HealthDimensionRecord",
+        "HealthEvidenceMatrix",
+        "createUnknown"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/RealitySurface.kt",
+      "lines": 27,
+      "decls": [
+        "SurfaceType",
+        "InspectionStatus",
+        "RealitySurface"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/ReinspectionPlanner.kt",
+      "lines": 46,
+      "decls": [
+        "ReinspectionPlanner"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/RemoteControlPlaneRepository.kt",
+      "lines": 455,
+      "decls": [
+        "MindstreamEntry",
+        "ControlPlaneStateResponse",
+        "ControlPlaneApi",
+        "RemoteGovernorState",
+        "RemoteControlPlaneRepository"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/RemoteEndpointConfiguration.kt",
+      "lines": 66,
+      "decls": [
+        "EndpointEnvironment",
+        "TransportSecurityState",
+        "ConnectionDiagnostic",
+        "RemoteEndpointConfiguration"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/RuntimeObservatory.kt",
+      "lines": 39,
+      "decls": [
+        "RuntimeObservatory"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/ecology/TandemDevelopmentRuntime.kt",
+      "lines": 238,
+      "decls": [
+        "DevelopmentSignalType",
+        "SignalStatus",
+        "DevelopmentSignal",
+        "ActiveWorkerRecord",
+        "TandemRuntimeState",
+        "SharedDevelopmentMemory",
+        "TandemDevelopmentRuntime"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/epistemic/ContinuousEpistemicEngine.kt",
+      "lines": 137,
+      "decls": [
+        "EpistemicReport",
+        "ContinuousEpistemicEngine",
+        "ContinuousEpistemicEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/epistemic/EpistemicState.kt",
+      "lines": 83,
+      "decls": [
+        "EpistemicStatus",
+        "SourceRole",
+        "KnowledgeSource",
+        "KnowledgeClaim",
+        "KnowledgeConflict",
+        "BeliefRevision"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/evolution/LiberativeEvolutionEngine.kt",
+      "lines": 59,
+      "decls": [
+        "FreedomVector",
+        "LiberativeEvolutionEngine",
+        "LiberativeEvolutionEngineImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/evolution/PersonalOntology.kt",
+      "lines": 90,
+      "decls": [
+        "EpistemicLabel",
+        "SymbolicLens",
+        "OwnerObjectives",
+        "PersonalOntology"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/AgencyCapability.kt",
+      "lines": 24,
+      "decls": [
+        "CapabilityScope",
+        "CapabilityRequest",
+        "CapabilityAssessment",
+        "CapabilityAuthorization",
+        "CapabilityResult",
+        "AgencyCapability"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/CodingTrialAuthorization.kt",
+      "lines": 106,
+      "decls": [
+        "TrialState",
+        "EpistemicCapabilityState",
+        "TrialPermissions",
+        "TrialTask",
+        "VerificationRequirements",
+        "BudgetConfig",
+        "CodingTrialAuthorization",
+        "LiveCodingTrialEvidence"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/GitHubCapability.kt",
+      "lines": 160,
+      "decls": [
+        "GitHubRepoResponse",
+        "GitHubCapability"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {
+        "stub": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/LiveCodingRealityOrchestrator.kt",
+      "lines": 106,
+      "decls": [
+        "LiveCodingRealityOrchestrator"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/OpenHandsCapabilityProbe.kt",
+      "lines": 41,
+      "decls": [
+        "OpenHandsCapabilityProbe"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/OpenHandsWorkerAdapter.kt",
+      "lines": 76,
+      "decls": [
+        "OpenHandsWorkerAdapter",
+        "CapabilityGapException"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "simulate": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/RepositorySnapshotResolver.kt",
+      "lines": 10,
+      "decls": [
+        "RepositorySnapshotResolver"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/EnvironmentImplementations.kt",
+      "lines": 200,
+      "decls": [
+        "AIStudioSandboxEnvironment",
+        "RemoteNativeWorkerEnvironment",
+        "AndroidEdgeEnvironment",
+        "CloudControlPlaneEnvironment",
+        "DockerExecutionEnvironment",
+        "PodmanExecutionEnvironment"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/ExecutionEnvironment.kt",
+      "lines": 38,
+      "decls": [
+        "CapabilityLevel",
+        "EnvironmentCapabilities",
+        "ExecutionEnvironment"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/ExecutionPlacementEngine.kt",
+      "lines": 59,
+      "decls": [
+        "ExecutionPlacementEngine",
+        "PlacementRequirement",
+        "PlacementResult"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/FabricNodeState.kt",
+      "lines": 11,
+      "decls": [
+        "FabricNodeState"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/GovernorRegistryServer.kt",
+      "lines": 10,
+      "decls": [
+        "GovernorRegistryServer"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/RemoteFabricCodingWorker.kt",
+      "lines": 80,
+      "decls": [
+        "RemoteFabricCodingWorker"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/RemoteFabricWorkerEnvironment.kt",
+      "lines": 192,
+      "decls": [
+        "CommandResult",
+        "RemoteFabricWorkerEnvironment"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/WorkerDiscoveryService.kt",
+      "lines": 50,
+      "decls": [
+        "WorkerDiscoveryService"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/environment/WorkerRegistry.kt",
+      "lines": 47,
+      "decls": [
+        "WorkerNodeRecord",
+        "WorkerRegistry",
+        "GlobalWorkerRegistry"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/CapabilityFabric.kt",
+      "lines": 157,
+      "decls": [
+        "CapabilityFabric",
+        "FabricEndpoints",
+        "CapabilityCatalogEntry"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/CapabilityProvider.kt",
+      "lines": 27,
+      "decls": [
+        "CapabilityProvider"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/HatchetClient.kt",
+      "lines": 50,
+      "decls": [
+        "HatchetClient"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/HatchetWorkflowProvider.kt",
+      "lines": 62,
+      "decls": [
+        "HatchetWorkflowProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/LiteLLMClient.kt",
+      "lines": 22,
+      "decls": [
+        "LiteLLMClient"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/LiteLLMModelProvider.kt",
+      "lines": 50,
+      "decls": [
+        "LiteLLMModelProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/MinIOClient.kt",
+      "lines": 22,
+      "decls": [
+        "MinIOClient"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/MinIOStorageProvider.kt",
+      "lines": 50,
+      "decls": [
+        "MinIOStorageProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/NativeFallbackProvider.kt",
+      "lines": 37,
+      "decls": [
+        "NativeFallbackProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "simulate": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/OpenHandsClient.kt",
+      "lines": 120,
+      "decls": [
+        "OpenHandsClient"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "mock": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/OpenHandsCodingProvider.kt",
+      "lines": 83,
+      "decls": [
+        "OpenHandsCodingProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/PlaywrightBrowserProvider.kt",
+      "lines": 50,
+      "decls": [
+        "PlaywrightBrowserProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/PlaywrightClient.kt",
+      "lines": 22,
+      "decls": [
+        "PlaywrightClient"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/PostgresClient.kt",
+      "lines": 24,
+      "decls": [
+        "PostgresClient"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/PostgresDatabaseProvider.kt",
+      "lines": 50,
+      "decls": [
+        "PostgresDatabaseProvider"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/ProviderModels.kt",
+      "lines": 53,
+      "decls": [
+        "CapabilityType",
+        "CapabilityProbeResult",
+        "CapabilityAuthorization",
+        "CapabilityTask",
+        "CapabilityExecutionResult",
+        "CostMetrics"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/ProviderRegistry.kt",
+      "lines": 27,
+      "decls": [
+        "ProviderRegistry"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/integration/EvolutionaryBranching.kt",
+      "lines": 56,
+      "decls": [
+        "BranchPhase",
+        "EvolutionBranch",
+        "EvolutionaryBranchingProtocol",
+        "EvolutionaryBranchingProtocolImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/integration/RealityTrialHarness.kt",
+      "lines": 68,
+      "decls": [
+        "RealityTrialHarness"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/ContextReconstructionEngine.kt",
+      "lines": 73,
+      "decls": [
+        "ContextReconstructionEngine",
+        "TaskContext"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/FileBackedConversationLedger.kt",
+      "lines": 59,
+      "decls": [
+        "FileBackedConversationLedger"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/ImmutableConversationLedger.kt",
+      "lines": 67,
+      "decls": [
+        "ConversationActor",
+        "EventProvenance",
+        "ConversationEvent",
+        "ImmutableConversationLedger",
+        "InMemoryConversationLedger"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/MemoryIndependenceCheck.kt",
+      "lines": 45,
+      "decls": [
+        "MemoryIndependenceCheck",
+        "IndependenceResult",
+        "MemoryIndependenceCheckImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/OntologyFederation.kt",
+      "lines": 84,
+      "decls": [
+        "OntologyCategory",
+        "OntologySystem",
+        "EpistemicStatus",
+        "OntologyClaim",
+        "OntologyFederationEngine"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/OwnerContextGraph.kt",
+      "lines": 56,
+      "decls": [
+        "OwnerGoal",
+        "TerminologyPreference",
+        "OwnerContextGraph"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/ResearchHistoryEngine.kt",
+      "lines": 116,
+      "decls": [
+        "ResearchHistoryEngine",
+        "ResearchHistoryEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/ResearchMemoryState.kt",
+      "lines": 52,
+      "decls": [
+        "ArtifactStatus",
+        "ArtifactLineage",
+        "PersistentResearchArtifact",
+        "MemoryDashboardStats"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/memory/SemanticResearchGraph.kt",
+      "lines": 49,
+      "decls": [
+        "SemanticResearchGraph",
+        "SemanticResearchGraphImpl",
+        "Edge"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/multimodal/MultimodalKnowledgeAcquisitionEngine.kt",
+      "lines": 82,
+      "decls": [
+        "MultimodalKnowledgeAcquisitionEngine",
+        "MultimodalKnowledgeAcquisitionEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "mock": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/multimodal/MultimodalState.kt",
+      "lines": 40,
+      "decls": [
+        "SourceModality",
+        "PolicyCompliance",
+        "ResearchArtifact",
+        "ResearchSynthesis"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/multimodal/VideoResearchEngine.kt",
+      "lines": 83,
+      "decls": [
+        "VideoResearchEngine",
+        "VideoResearchEngineImpl"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/mutation/CodeMutationEngine.kt",
+      "lines": 78,
+      "decls": [
+        "CodeMutationEngine"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/tandem/AgencyObservatory.kt",
+      "lines": 20,
+      "decls": [
+        "AgencyObservatory",
+        "AgencyObservatoryImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/tandem/SignalMiner.kt",
+      "lines": 35,
+      "decls": [
+        "SignalMiner",
+        "SignalMinerImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/tandem/TandemAgencyCoordinator.kt",
+      "lines": 88,
+      "decls": [
+        "TandemAgencyCoordinator",
+        "TandemAgencyCoordinatorImpl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/tandem/TandemState.kt",
+      "lines": 41,
+      "decls": [
+        "AutonomyGradient",
+        "SignalType",
+        "DevelopmentSignal",
+        "MindstreamEntry"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/workspace/WorkspaceModels.kt",
+      "lines": 109,
+      "decls": [
+        "Workspace",
+        "WorkspaceType",
+        "Project",
+        "AgentSession",
+        "AgentRun",
+        "Artifact",
+        "ArtifactType",
+        "Preview",
+        "PreviewType"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/AppDatabase.kt",
+      "lines": 22,
+      "decls": [
+        "AppDatabase"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/AstroDao.kt",
+      "lines": 20,
+      "decls": [
+        "AstroDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/AstroEntities.kt",
+      "lines": 17,
+      "decls": [
+        "AstroProfile"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/AstroNumerologyRepository.kt",
+      "lines": 96,
+      "decls": [
+        "AstroNumerologyRepository"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/CapabilityKnowledgeDao.kt",
+      "lines": 19,
+      "decls": [
+        "CapabilityKnowledgeDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/CapabilityKnowledgeEntity.kt",
+      "lines": 48,
+      "decls": [
+        "CapabilityKnowledgeEntity",
+        "CapabilityConverters"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/CapabilityStateDao.kt",
+      "lines": 16,
+      "decls": [
+        "CapabilityStateDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/CapabilityStateEntity.kt",
+      "lines": 14,
+      "decls": [
+        "CapabilityStateEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/ChatRepository.kt",
+      "lines": 44,
+      "decls": [
+        "ChatRepository"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/CryptoManager.kt",
+      "lines": 70,
+      "decls": [
+        "CryptoManager"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/EndpointDao.kt",
+      "lines": 39,
+      "decls": [
+        "EndpointDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/EndpointEntity.kt",
+      "lines": 17,
+      "decls": [
+        "EndpointEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/GraphNode.kt",
+      "lines": 17,
+      "decls": [
+        "GraphNode"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/GraphNodeDao.kt",
+      "lines": 28,
+      "decls": [
+        "GraphNodeDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/JobDao.kt",
+      "lines": 26,
+      "decls": [
+        "JobDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/JobEntity.kt",
+      "lines": 23,
+      "decls": [
+        "JobEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/LocalIntelligenceRepository.kt",
+      "lines": 101,
+      "decls": [
+        "LocalIntelligenceRepository"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/LocationDao.kt",
+      "lines": 44,
+      "decls": [
+        "LocationDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/LocationEntities.kt",
+      "lines": 34,
+      "decls": [
+        "UserConstraints",
+        "LocationSnapshot",
+        "RegionProfile"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/LocationRepository.kt",
+      "lines": 87,
+      "decls": [
+        "LocationRepository"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/MemoryFragment.kt",
+      "lines": 15,
+      "decls": [
+        "MemoryFragment"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/MemoryFragmentDao.kt",
+      "lines": 24,
+      "decls": [
+        "MemoryFragmentDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/MessageDao.kt",
+      "lines": 28,
+      "decls": [
+        "MessageDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/MessageEntity.kt",
+      "lines": 17,
+      "decls": [
+        "MessageEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/MissionDao.kt",
+      "lines": 23,
+      "decls": [
+        "MissionDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/MissionEntity.kt",
+      "lines": 17,
+      "decls": [
+        "MissionEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/SessionDao.kt",
+      "lines": 22,
+      "decls": [
+        "SessionDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/SessionEntity.kt",
+      "lines": 11,
+      "decls": [
+        "SessionEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/SettingsRepository.kt",
+      "lines": 216,
+      "decls": [
+        "SettingsRepository"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/StyleDao.kt",
+      "lines": 20,
+      "decls": [
+        "StyleDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/StyleProfileEntity.kt",
+      "lines": 14,
+      "decls": [
+        "StyleProfileEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/WorkspaceDao.kt",
+      "lines": 29,
+      "decls": [
+        "WorkspaceDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/WorkspaceEntity.kt",
+      "lines": 23,
+      "decls": [
+        "WorkspaceEntity",
+        "FileEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/github/HierarchicalMemoryManager.kt",
+      "lines": 162,
+      "decls": [
+        "HierarchicalMemoryManager"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/github/MemoryManager.kt",
+      "lines": 127,
+      "decls": [
+        "MemoryManager"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/FirebaseManager.kt",
+      "lines": 33,
+      "decls": [
+        "FirebaseManager"
+      ],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/GitHubApiService.kt",
+      "lines": 164,
+      "decls": [
+        "GitHubWorkflowRunsResponse",
+        "GitHubWorkflowRun",
+        "GitHubApiService",
+        "GitHubTreeResponse",
+        "GitHubTreeItem",
+        "GitHubRefResponse",
+        "GitHubRefObject",
+        "GitHubCommitResponse",
+        "GitHubCommitTree",
+        "GitHubBlobRequest",
+        "GitHubBlobResponse",
+        "GitHubTreeRequest",
+        "GitHubTreeItemRequest",
+        "GitHubTreeResponseInfo",
+        "GitHubCreateCommitRequest",
+        "GitHubUpdateRefRequest",
+        "GitHubRepoDto",
+        "GitHubOwnerDto",
+        "GitHubIssueDto",
+        "GitHubCreateRefRequest",
+        "GitHubCreatePRRequest",
+        "GitHubPRResponse",
+        "GitHubReadmeDto"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/GitHubAuthService.kt",
+      "lines": 40,
+      "decls": [
+        "GitHubAuthService",
+        "DeviceCodeResponse",
+        "AccessTokenResponse"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/OllamaApiService.kt",
+      "lines": 17,
+      "decls": [
+        "OllamaApiService"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/OllamaModels.kt",
+      "lines": 27,
+      "decls": [
+        "OllamaChatRequest",
+        "OllamaMessage",
+        "OllamaChatResponse"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/OpenRouterApiService.kt",
+      "lines": 21,
+      "decls": [
+        "OpenRouterApiService"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/OpenRouterModels.kt",
+      "lines": 45,
+      "decls": [
+        "OpenRouterRequest",
+        "OpenRouterResponse",
+        "OpenRouterChoice",
+        "OpenRouterDelta",
+        "OpenRouterMessage",
+        "OpenRouterContentPart",
+        "OpenRouterImageUrl"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/RetrofitClient.kt",
+      "lines": 90,
+      "decls": [
+        "RetrofitClient"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/network/TelegramApi.kt",
+      "lines": 81,
+      "decls": [
+        "TelegramUpdateResponse",
+        "TelegramUpdate",
+        "TelegramMessage",
+        "TelegramUser",
+        "TelegramChat",
+        "TelegramMessageRequest",
+        "TelegramMessageResponse",
+        "TelegramApiService"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/AppShell.kt",
+      "lines": 176,
+      "decls": [
+        "ShellRoute",
+        "Home",
+        "Conversations",
+        "Projects",
+        "Apps",
+        "Games",
+        "Workspaces",
+        "Agents",
+        "ExecutionFabric",
+        "CapabilityFabric",
+        "Memory",
+        "Settings",
+        "AppShell"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "placeholder": 1
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/CapabilityAuditScreen.kt",
+      "lines": 110,
+      "decls": [
+        "CapabilityAuditScreen"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/CapabilityCompetitionScreen.kt",
+      "lines": 110,
+      "decls": [
+        "CapabilityCompetitionScreen"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/CapabilityFabricScreen.kt",
+      "lines": 170,
+      "decls": [
+        "CapabilityFabricScreen",
+        "CapabilityRow"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/ChatScreen.kt",
+      "lines": 552,
+      "decls": [
+        "ChatScreen",
+        "TypingIndicator",
+        "MessageBubble",
+        "CouncilMessageGroup"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "placeholder": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/ChatViewModel.kt",
+      "lines": 1483,
+      "decls": [
+        "DeviceFlowState",
+        "ChatViewModel",
+        "ChatViewModelFactory"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/ConnectionsScreen.kt",
+      "lines": 202,
+      "decls": [
+        "ConnectionsScreen",
+        "ConnectionRow"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/EvidenceScreen.kt",
+      "lines": 93,
+      "decls": [
+        "EvidenceScreen"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/FabricScreen.kt",
+      "lines": 233,
+      "decls": [
+        "FabricScreen"
+      ],
+      "reached": false,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/MainScreen.kt",
+      "lines": 145,
+      "decls": [
+        "Screen",
+        "Chat",
+        "Observatory",
+        "Workspace",
+        "Tasks",
+        "Evidence",
+        "Connections",
+        "CapabilityAudit",
+        "CapabilityCompetition",
+        "Settings",
+        "Privacy",
+        "MainScreen"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/MarkdownText.kt",
+      "lines": 47,
+      "decls": [
+        "MarkdownText"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/ObservatoryScreen.kt",
+      "lines": 1262,
+      "decls": [
+        "ObservatoryTab",
+        "ObservatoryScreen",
+        "CockpitView",
+        "TelemetryStatCard",
+        "BudgetProgressBar",
+        "CapabilityRealityMatrixView",
+        "CapabilityCard",
+        "WorkerStreamsView",
+        "WorkerJobCard",
+        "TandemCoDevView",
+        "MindstreamView",
+        "MindstreamEntryRow"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/OnboardingScreen.kt",
+      "lines": 101,
+      "decls": [
+        "OnboardingScreen"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/PrivacyScreen.kt",
+      "lines": 110,
+      "decls": [
+        "PrivacyScreen"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/RecoveryShell.kt",
+      "lines": 52,
+      "decls": [
+        "RecoveryShell"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/SettingsScreen.kt",
+      "lines": 592,
+      "decls": [
+        "SettingsScreen",
+        "AddEndpointDialog",
+        "DeviceFlowDialog",
+        "EditEndpointDialog"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "placeholder": 7
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/SyntaxHighlightPlugin.kt",
+      "lines": 67,
+      "decls": [
+        "SyntaxHighlightPlugin"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/TasksScreen.kt",
+      "lines": 79,
+      "decls": [
+        "TasksScreen"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/WorkspaceScreen.kt",
+      "lines": 325,
+      "decls": [
+        "SyntaxHighlighter",
+        "WorkspaceScreen",
+        "AddWorkspaceDialog",
+        "FileTreeViewer",
+        "CodeEditor"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "placeholder": 2
+      }
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/WorkspaceViewModel.kt",
+      "lines": 150,
+      "decls": [
+        "WorkspaceViewModel",
+        "WorkspaceViewModelFactory"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/theme/Color.kt",
+      "lines": 38,
+      "decls": [],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/theme/Theme.kt",
+      "lines": 67,
+      "decls": [
+        "MyApplicationTheme"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ui/theme/Type.kt",
+      "lines": 37,
+      "decls": [],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "cloud_control_plane/src/main/kotlin/com/example/ai/cloud/AgencyLedgerRepository.kt",
+      "lines": 37,
+      "decls": [
+        "AgencyLedgerRepository"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "cloud_control_plane/src/main/kotlin/com/example/ai/cloud/AutonomousMetabolismScheduler.kt",
+      "lines": 22,
+      "decls": [
+        "AutonomousMetabolismScheduler"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "cloud_control_plane/src/main/kotlin/com/example/ai/cloud/ControlPlaneServer.kt",
+      "lines": 179,
+      "decls": [
+        "startKtorServer"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "cloud_control_plane/src/main/kotlin/com/example/ai/cloud/CycleExecutor.kt",
+      "lines": 76,
+      "decls": [
+        "CycleExecutor"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {
+        "simulate": 1
+      }
+    },
+    {
+      "file": "cloud_control_plane/src/main/kotlin/com/example/ai/cloud/Main.kt",
+      "lines": 69,
+      "decls": [
+        "main",
+        "runVerificationTest"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "cloud_control_plane/src/main/kotlin/com/example/ai/cloud/PostgresLedgerRepository.kt",
+      "lines": 303,
+      "decls": [
+        "PostgresLedgerRepository"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {}
+    },
+    {
+      "file": "cloud_control_plane/src/main/kotlin/com/example/ai/cloud/SQLiteLedgerRepository.kt",
+      "lines": 506,
+      "decls": [
+        "SQLiteLedgerRepository"
+      ],
+      "reached": true,
+      "realIO": true,
+      "marks": {
+        "simulate": 1
+      }
+    }
+  ]
+}

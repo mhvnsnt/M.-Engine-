@@ -42,22 +42,32 @@ class OpenHandsCodingProvider(
         
         return try {
             // Context mapping: convert M. Engine task boundaries into OpenHands Agent Canvas Session
-            val payload = """
-                {
-                    "objective": "${task.objective}",
-                    "max_iterations": ${authorization.maxBudgetTokens ?: 50},
-                    "allowed_paths": [${authorization.allowedPaths.joinToString(",") { "\"$it\"" }}]
+            // The objective and its authorization boundary become the agent's
+            // opening instruction. OpenHands owns execution; M. Engine keeps the
+            // authority over what was permitted and what counts as evidence.
+            val instruction = buildString {
+                append(task.objective)
+                if (authorization.allowedPaths.isNotEmpty()) {
+                    append("\n\nRestrict all changes to these paths: ")
+                    append(authorization.allowedPaths.joinToString(", "))
                 }
-            """.trimIndent()
-            
-            val response = client.dispatchSession(payload)
-            
-            // We would later return the Agent Canvas URL in the Evidence Payload for Live Observatory integration
+            }
+
+            val startTaskId = client.startConversation(
+                instruction = instruction,
+                repository = task.contextPayload.takeIf { it.isNotBlank() }
+            )
+
+            // A start task is not a finished job. Report the id and the real
+            // status rather than claiming success the moment dispatch returns.
+            val status = runCatching { client.startTaskStatus(startTaskId) }.getOrNull()
+
             CapabilityExecutionResult(
                 taskId = task.taskId,
                 exitCode = 0,
-                stdout = "OpenHands session dispatched. Response: $response",
-                stderr = ""
+                stdout = "OpenHands conversation started. start_task_id=$startTaskId",
+                stderr = "",
+                returnedEvidencePayload = status
             )
         } catch (e: Exception) {
             CapabilityExecutionResult(

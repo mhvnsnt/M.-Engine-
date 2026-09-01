@@ -11,9 +11,27 @@ class LiveCodingRealityOrchestrator(
         return bytes.joinToString("") { "%02x".format(it) }
     }
 
+    /**
+     * Runs a bounded coding trial against a REAL OpenHands runtime.
+     *
+     * What changed and why it matters: this method used to verify success with
+     *     if (!rawTestOutput.contains("BUILD SUCCESSFUL")) ...
+     * against a string the adapter itself hardcoded. The evidence engine was
+     * validating its own fiction — the strongest possible form of the failure
+     * REALITY_CONTRACT.md exists to prevent.
+     *
+     * It now dispatches through the documented OpenHands App Conversations API
+     * and treats the returned events as the only evidence. Where the runtime is
+     * absent the trial stops at WORKER_UNREACHABLE instead of manufacturing a
+     * pass.
+     *
+     * Cleanup is deliberately reported as CLEANUP_UNKNOWN: OpenHands owns its
+     * own sandbox lifecycle and exposes no destroy call on this API, so this
+     * orchestrator cannot honestly claim to have inspected teardown.
+     */
     suspend fun executeTrial(authorization: CodingTrialAuthorization): LiveCodingTrialEvidence {
         val states = mutableListOf<TrialState>()
-        
+
         // 1. AUTHORIZED
         states.add(TrialState.AUTHORIZED)
 
@@ -25,54 +43,48 @@ class LiveCodingRealityOrchestrator(
         }
         states.add(TrialState.REPOSITORY_OBSERVED)
 
-        // 3. WORKSPACE_CREATED
-        val sessionId = try {
-            workerAdapter.provisionEphemeralContainer(authorization)
+        // 3-4. Dispatch. A missing runtime is a capability gap, not a failure to
+        // hide: startConversation throws CapabilityGapException when unreachable.
+        val startTaskId = try {
+            workerAdapter.startConversation(authorization, authorization.task.instruction)
+        } catch (e: OpenHandsWorkerAdapter.CapabilityGapException) {
+            states.add(TrialState.WORKER_UNREACHABLE)
+            return createEvidence(authorization, resolvedSha, states, TrialState.WORKER_UNREACHABLE, EpistemicCapabilityState.IMPLEMENTED_UNVERIFIED)
         } catch (e: Exception) {
             states.add(TrialState.WORKER_UNREACHABLE)
             return createEvidence(authorization, resolvedSha, states, TrialState.WORKER_UNREACHABLE, EpistemicCapabilityState.IMPLEMENTED_UNVERIFIED)
         }
-        states.add(TrialState.WORKSPACE_CREATED)
         states.add(TrialState.WORKER_REACHED)
-
-        // 4. JOB_DISPATCHED & WORKER_REPORTED_RESULT
-        workerAdapter.dispatchBoundedTask(sessionId, authorization.task.instruction)
+        states.add(TrialState.WORKSPACE_CREATED)
         states.add(TrialState.JOB_DISPATCHED)
-        states.add(TrialState.WORKER_REPORTED_RESULT)
 
-        // 5. ARTIFACTS_INDEPENDENTLY_INSPECTED
-        val rawDiff = workerAdapter.retrieveDiff(sessionId)
-        val diffHash = if (rawDiff.isNotEmpty()) sha256(rawDiff) else null
-        if (diffHash == null) {
+        // 5. Evidence comes from the runtime's own event log, or not at all.
+        val events = try {
+            workerAdapter.retrieveConversationEvents(startTaskId)
+        } catch (e: Exception) {
             states.add(TrialState.ARTIFACT_VERIFICATION_FAILED)
-            workerAdapter.destroyContainer(sessionId)
             return createEvidence(authorization, resolvedSha, states, TrialState.ARTIFACT_VERIFICATION_FAILED, EpistemicCapabilityState.IMPLEMENTED_UNVERIFIED)
         }
+        if (events.isBlank()) {
+            states.add(TrialState.ARTIFACT_VERIFICATION_FAILED)
+            return createEvidence(authorization, resolvedSha, states, TrialState.ARTIFACT_VERIFICATION_FAILED, EpistemicCapabilityState.IMPLEMENTED_UNVERIFIED)
+        }
+        states.add(TrialState.WORKER_REPORTED_RESULT)
+
+        // The hash pins exactly which bytes of evidence this verdict rests on.
+        val evidenceHash = sha256(events)
         states.add(TrialState.ARTIFACTS_INDEPENDENTLY_INSPECTED)
 
-        // 6. TEST_EXECUTION_OBSERVED
-        val rawTestOutput = workerAdapter.retrieveTestOutput(sessionId)
-        if (!rawTestOutput.contains("BUILD SUCCESSFUL") || !rawTestOutput.contains("0 failed")) {
-            states.add(TrialState.TEST_FAILED)
-            workerAdapter.destroyContainer(sessionId)
-            return createEvidence(authorization, resolvedSha, states, TrialState.TEST_FAILED, EpistemicCapabilityState.IMPLEMENTED_UNVERIFIED, diffHash)
-        }
-        states.add(TrialState.TEST_EXECUTION_OBSERVED)
+        // No teardown call exists on this API; say so rather than assume it.
+        states.add(TrialState.CLEANUP_UNKNOWN)
 
-        // 7. CLEANUP_INSPECTED
-        val destroyed = workerAdapter.destroyContainer(sessionId)
-        if (!destroyed) {
-            states.add(TrialState.CLEANUP_UNKNOWN)
-            return createEvidence(authorization, resolvedSha, states, TrialState.CLEANUP_UNKNOWN, EpistemicCapabilityState.IMPLEMENTED_UNVERIFIED, diffHash)
-        }
-        states.add(TrialState.CLEANUP_INSPECTED)
-
-        // 8. VERIFIED_PARTIAL
+        // PARTIALLY_VERIFIED, never VERIFIED_OPERATIONAL: dispatch and evidence
+        // retrieval were real, but this orchestrator has not independently
+        // re-run the tests it is being told about.
         states.add(TrialState.VERIFIED_PARTIAL)
-
-        return createEvidence(authorization, resolvedSha, states, TrialState.VERIFIED_PARTIAL, EpistemicCapabilityState.ORCHESTRATOR_LOGIC_VERIFIED, diffHash)
+        return createEvidence(authorization, resolvedSha, states, TrialState.VERIFIED_PARTIAL, EpistemicCapabilityState.PARTIALLY_VERIFIED, evidenceHash)
     }
-    
+
     private fun createEvidence(
         auth: CodingTrialAuthorization, 
         sha: String?, 
