@@ -59,6 +59,30 @@ not discovered late:
 
 ---
 
+## Embedding modes — be aggressive about federation, selective about embedding
+
+Owner correction, recorded because it prevents a predictable failure: pulling
+"everything possible" into the source tree produces dependency hell, licence
+conflicts and partial copies of fifty unrelated applications. The rule is
+aggressive *federation*, selective *embedding*.
+
+| System | Mode | Never |
+| --- | --- | --- |
+| Unreal / Lyra | source/project on the **Unreal worker** | not in the Android app |
+| Blender | external application **worker** | not embedded |
+| OpenHands | **service / worker** | not vendored |
+| Hatchet or Temporal | durable control-plane **service** | not reimplemented |
+| Playwright | **browser worker** | not in-app |
+| Ghidra | authorised-analysis **worker** | not in the normal coding loop |
+| FFmpeg | **media worker** capability | process, not linked library — which also keeps its copyleft at arm's length |
+| Postgres + pgvector | canonical server-side **persistence/retrieval** | not a second authority |
+| OpenTelemetry | observability **substrate** | not before workers exist to emit spans |
+| ComfyUI | optional generative-media **worker** | not copied into the source tree |
+
+M. Engine governs. It does not absorb.
+
+---
+
 ## The rule this matrix enforces
 
 Do not pull a repository merely because it is open source. Each entry required:
