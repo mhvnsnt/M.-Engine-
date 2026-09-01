@@ -11,7 +11,10 @@ enum class CapabilityType {
     RESEARCH_EXTRACTION,
     DEPLOYMENT,
     DATABASE,
-    ARTIFACT_STORAGE
+    ARTIFACT_STORAGE,
+
+    /** Unreal / game-engine compilation and packaging on a remote worker. */
+    GAME_ENGINE_BUILD
 }
 
 data class CapabilityProbeResult(

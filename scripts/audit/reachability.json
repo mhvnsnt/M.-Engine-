@@ -2230,7 +2230,7 @@
     },
     {
       "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/CapabilityFabric.kt",
-      "lines": 157,
+      "lines": 164,
       "decls": [
         "CapabilityFabric",
         "FabricEndpoints",
@@ -2386,7 +2386,7 @@
     },
     {
       "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/ProviderModels.kt",
-      "lines": 53,
+      "lines": 56,
       "decls": [
         "CapabilityType",
         "CapabilityProbeResult",
@@ -2407,6 +2407,17 @@
       ],
       "reached": true,
       "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/ai/capabilities/federated/provider/UnrealWorkerProvider.kt",
+      "lines": 191,
+      "decls": [
+        "UnrealWorkerClient",
+        "UnrealExecutionProvider"
+      ],
+      "reached": true,
+      "realIO": true,
       "marks": {}
     },
     {
