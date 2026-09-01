@@ -26,6 +26,7 @@ import com.example.data.ALL_MIGRATIONS
 import com.example.data.AppDatabase
 import com.example.data.ChatRepository
 import com.example.data.CanonicalMemory
+import com.example.data.ProjectRepository
 import com.example.data.RoomConversationLedger
 import com.example.ui.ChatScreen
 import com.example.ui.ChatViewModel
@@ -46,6 +47,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var repository: ChatRepository
     private lateinit var conversationLedger: RoomConversationLedger
     private lateinit var canonicalMemory: CanonicalMemory
+    private lateinit var projectRepository: ProjectRepository
     private lateinit var settingsRepository: SettingsRepository
     private lateinit var viewModel: ChatViewModel
     private lateinit var workspaceViewModel: WorkspaceViewModel
@@ -80,6 +82,7 @@ class MainActivity : ComponentActivity() {
         
         conversationLedger = RoomConversationLedger(database.conversationEventDao())
         canonicalMemory = CanonicalMemory(conversationLedger, database.ownerContextDao())
+        projectRepository = ProjectRepository(database.projectDao(), conversationLedger)
 
         repository = ChatRepository(
             database.messageDao(),
@@ -121,7 +124,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppShell(viewModel = viewModel, workspaceViewModel = workspaceViewModel)
+                    AppShell(viewModel = viewModel, workspaceViewModel = workspaceViewModel, projects = projectRepository)
                 }
             }
         }

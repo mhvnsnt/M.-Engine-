@@ -75,4 +75,71 @@ val MIGRATION_11_12 = object : Migration(11, 12) {
     }
 }
 
-val ALL_MIGRATIONS = arrayOf(MIGRATION_10_11, MIGRATION_11_12)
+val MIGRATION_12_13 = object : Migration(12, 13) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Additive: Project authority (Level 2), the Library artifact graph, and
+        // worker job records. Nothing existing is touched.
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `projects` (
+                `id` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL,
+                `status` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL,
+                PRIMARY KEY(`id`))
+            """.trimIndent(),
+        )
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `project_associations` (
+                `projectId` TEXT NOT NULL, `kind` TEXT NOT NULL, `refId` TEXT NOT NULL,
+                `createdAt` INTEGER NOT NULL,
+                PRIMARY KEY(`projectId`, `kind`, `refId`))
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_project_associations_projectId` ON `project_associations` (`projectId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_project_associations_kind` ON `project_associations` (`kind`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_project_associations_refId` ON `project_associations` (`refId`)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `project_memory` (
+                `id` TEXT NOT NULL, `projectId` TEXT NOT NULL, `kind` TEXT NOT NULL,
+                `statement` TEXT NOT NULL, `provenance` TEXT NOT NULL,
+                `sourceEventIds` TEXT NOT NULL, `createdAt` INTEGER NOT NULL,
+                `supersededBy` TEXT, PRIMARY KEY(`id`))
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_project_memory_projectId` ON `project_memory` (`projectId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_project_memory_kind` ON `project_memory` (`kind`)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `artifacts` (
+                `id` TEXT NOT NULL, `contentHash` TEXT NOT NULL, `kind` TEXT NOT NULL,
+                `name` TEXT NOT NULL, `uri` TEXT NOT NULL, `sizeBytes` INTEGER NOT NULL,
+                `projectId` TEXT, `conversationId` TEXT, `jobId` TEXT,
+                `provenance` TEXT NOT NULL, `createdAt` INTEGER NOT NULL,
+                `supersededBy` TEXT, PRIMARY KEY(`id`))
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_artifacts_contentHash` ON `artifacts` (`contentHash`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_artifacts_projectId` ON `artifacts` (`projectId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_artifacts_conversationId` ON `artifacts` (`conversationId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_artifacts_jobId` ON `artifacts` (`jobId`)")
+
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `worker_jobs` (
+                `id` TEXT NOT NULL, `projectId` TEXT, `conversationId` TEXT,
+                `capabilityType` TEXT NOT NULL, `providerId` TEXT NOT NULL,
+                `objective` TEXT NOT NULL, `status` TEXT NOT NULL,
+                `reportedResult` TEXT, `verifiedResult` TEXT,
+                `startedAt` INTEGER NOT NULL, `finishedAt` INTEGER,
+                PRIMARY KEY(`id`))
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_worker_jobs_projectId` ON `worker_jobs` (`projectId`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_worker_jobs_status` ON `worker_jobs` (`status`)")
+    }
+}
+
+val ALL_MIGRATIONS = arrayOf(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_12_13)

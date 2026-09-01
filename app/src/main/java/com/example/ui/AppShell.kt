@@ -26,13 +26,18 @@ sealed class ShellRoute(val route: String, val title: String, val icon: androidx
     object Agents : ShellRoute("agents", "Agents", Icons.Default.SmartToy)
     object ExecutionFabric : ShellRoute("observatory", "Execution Fabric", Icons.Default.Visibility)
     object CapabilityFabric : ShellRoute("capability_fabric", "Capability Fabric", Icons.Default.Hub)
-    object Memory : ShellRoute("evidence", "Memory / Library", Icons.Default.CheckCircle)
+    object Memory : ShellRoute("evidence", "Memory / Evidence", Icons.Default.CheckCircle)
+    object Library : ShellRoute("library", "Library", Icons.Default.Inventory2)
     object Settings : ShellRoute("settings", "Settings", Icons.Default.Settings)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppShell(viewModel: ChatViewModel, workspaceViewModel: WorkspaceViewModel) {
+fun AppShell(
+    viewModel: ChatViewModel,
+    workspaceViewModel: WorkspaceViewModel,
+    projects: com.example.data.ProjectRepository? = null,
+) {
     val isOnboardingComplete by viewModel.settingsRepository.isOnboardingCompleteFlow.collectAsStateWithLifecycle(initialValue = false)
     val coroutineScope = rememberCoroutineScope()
     val controlPlaneRepository = remember { RemoteControlPlaneRepository() }
@@ -69,6 +74,7 @@ fun AppShell(viewModel: ChatViewModel, workspaceViewModel: WorkspaceViewModel) {
         ShellRoute.ExecutionFabric,
         ShellRoute.CapabilityFabric,
         ShellRoute.Memory,
+        ShellRoute.Library,
         ShellRoute.Settings
     )
 
@@ -137,7 +143,10 @@ fun AppShell(viewModel: ChatViewModel, workspaceViewModel: WorkspaceViewModel) {
                     ChatScreen(viewModel = viewModel, workspaceViewModel = workspaceViewModel, onSettingsClick = { navController.navigate(ShellRoute.Settings.route) })
                 }
                 composable(ShellRoute.Projects.route) {
-                    WorkspaceScreen(viewModel = workspaceViewModel)
+                    // Real canonical Project authority when wired; the file
+                    // workspace remains reachable under Workspaces.
+                    if (projects != null) ProjectsScreen(projects = projects)
+                    else WorkspaceScreen(viewModel = workspaceViewModel)
                 }
                 composable(ShellRoute.Apps.route) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) { Text("Apps OS (WIP)") }
@@ -146,7 +155,7 @@ fun AppShell(viewModel: ChatViewModel, workspaceViewModel: WorkspaceViewModel) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) { Text("Games OS (WIP)") }
                 }
                 composable(ShellRoute.Workspaces.route) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) { Text("Workspaces OS (WIP)") }
+                    WorkspaceScreen(viewModel = workspaceViewModel)
                 }
                 composable(ShellRoute.Agents.route) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) { Text("Agents OS (WIP)") }
@@ -159,6 +168,12 @@ fun AppShell(viewModel: ChatViewModel, workspaceViewModel: WorkspaceViewModel) {
                 }
                 composable(ShellRoute.Memory.route) {
                     EvidenceScreen(viewModel = viewModel)
+                }
+                composable(ShellRoute.Library.route) {
+                    if (projects != null) LibraryScreen(projects = projects)
+                    else Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                        Text("Library unavailable: project store not attached")
+                    }
                 }
                 composable("privacy") { PrivacyScreen(viewModel = viewModel, onNavigateBack = { navController.popBackStack() }) }
                 composable("tasks") { TasksScreen(viewModel = viewModel) }
