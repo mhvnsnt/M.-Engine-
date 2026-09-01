@@ -39,6 +39,7 @@ moshiKotlinCodegen = "1.15.2"
 datastorePreferences = "1.1.7"
 robolectric = "4.16.1"
 roborazzi = "1.59.0"
+detekt = "1.23.7"
 firebaseBom = "34.15.0"
 secretsGradlePlugin = "2.0.1"
 googleServices = "4.5.0"
@@ -111,6 +112,7 @@ onnxruntime-android = { group = "com.microsoft.onnxruntime", name = "onnxruntime
 firebase-functions = { group = "com.google.firebase", name = "firebase-functions" }
 firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
 [plugins]
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 objectbox = { id = "io.objectbox", version.ref = "objectbox" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

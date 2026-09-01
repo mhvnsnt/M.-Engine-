@@ -1,6 +1,7 @@
 import com.google.gms.googleservices.GoogleServicesPlugin.MissingGoogleServicesStrategy
 
 plugins {
+  alias(libs.plugins.detekt)
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.google.devtools.ksp)
@@ -189,4 +190,42 @@ dependencies {
   implementation("ch.acra:acra-core:5.11.3")
   implementation("ch.acra:acra-mail:5.11.3")
   implementation("ch.acra:acra-toast:5.11.3")
+}
+
+
+/**
+ * Static analysis gate.
+ *
+ * The CI workflow has always run `./gradlew lintDebug detekt`, but detekt was
+ * never declared anywhere in the build — so that step failed with "task not
+ * found" on every run, which is a large part of why this repository had zero
+ * green CI runs. Declaring it turns a permanently red step into a real gate.
+ *
+ * A baseline records the findings that already exist in 31k lines of code.
+ * Pre-existing issues do not block CI; anything NEW does. That is the only way
+ * to adopt static analysis on an existing codebase without either a
+ * thousand-issue wall or a check that silently passes.
+ */
+detekt {
+    buildUponDefaultConfig = true
+    // Findings present when the gate was introduced are recorded here rather
+    // than suppressed; the file is a visible, reviewable debt list.
+    baseline = file("detekt-baseline.xml")
+    parallel = true
+    source.setFrom(files("src/main/java", "src/test/java"))
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "11"
+    reports {
+        html.required.set(true)
+        // SARIF omitted: the HTML report is what a human reads, and each extra
+        // report format is another artifact to resolve at build time.
+        sarif.required.set(false)
+        txt.required.set(false)
+        md.required.set(false)
+    }
+}
+tasks.withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
+    jvmTarget = "11"
 }
