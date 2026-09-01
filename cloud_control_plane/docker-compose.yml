@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  agency_control_plane:
+    build:
+      context: ..
+      dockerfile: cloud_control_plane/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - AGENCY_DB_TYPE=postgres
+      - AGENCY_DB_URL=jdbc:postgresql://postgres:5432/agency_ledger?user=postgres&password=password
+      - PORT=8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=agency_ledger
+    ports:
+      - "5432:5432"
+    volumes:
+      - agency_data:/var/lib/postgresql/data
+      - ./schema/agency_ledger.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d agency_ledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  agency_data:

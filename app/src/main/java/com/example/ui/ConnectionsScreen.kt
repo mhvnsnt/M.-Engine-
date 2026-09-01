@@ -28,7 +28,8 @@ import kotlinx.coroutines.launch
 fun ConnectionsScreen(
     viewModel: ChatViewModel,
     onNavigateBack: () -> Unit,
-    onNavigateToAudit: () -> Unit = {}
+    onNavigateToAudit: () -> Unit = {},
+    onNavigateToFabric: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -101,6 +102,14 @@ fun ConnectionsScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Manage Capabilities")
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                Button(
+                    onClick = { onNavigateToFabric() },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                ) {
+                    Text("Manage Execution Fabric")
                 }
             }
         }

@@ -9,18 +9,13 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalDrawerSheet
-import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.rememberDrawerState
-
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
@@ -30,9 +25,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.ai.capabilities.ecology.RemoteControlPlaneRepository
 
 sealed class Screen(val route: String, val title: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     object Chat : Screen("chat", "Chat", Icons.AutoMirrored.Filled.Chat)
+    object Observatory : Screen("observatory", "Observatory", Icons.Default.Visibility)
     object Workspace : Screen("workspace", "Projects", Icons.Default.Folder)
     object Tasks : Screen("tasks", "Tasks", Icons.AutoMirrored.Filled.List)
     object Evidence : Screen("evidence", "Evidence", Icons.Default.CheckCircle)
@@ -47,6 +44,7 @@ sealed class Screen(val route: String, val title: String, val icon: androidx.com
 fun MainScreen(viewModel: ChatViewModel, workspaceViewModel: com.example.ui.WorkspaceViewModel) {
     val isOnboardingComplete by viewModel.settingsRepository.isOnboardingCompleteFlow.collectAsStateWithLifecycle(initialValue = false)
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
+    val controlPlaneRepository = remember { RemoteControlPlaneRepository() }
     
     if (!isOnboardingComplete) {
         OnboardingScreen(onComplete = {
@@ -61,14 +59,14 @@ fun MainScreen(viewModel: ChatViewModel, workspaceViewModel: com.example.ui.Work
     LaunchedEffect(selectedFile) {
         viewModel.workspaceContext.value = selectedFile?.content
     }
+
     val navController = rememberNavController()
     val items = listOf(
+        Screen.Observatory,
         Screen.Chat,
         Screen.Workspace,
-        Screen.Tasks,
         Screen.Evidence,
-        Screen.Settings,
-        Screen.Connections
+        Screen.Settings
     )
 
     Scaffold(
@@ -108,9 +106,12 @@ fun MainScreen(viewModel: ChatViewModel, workspaceViewModel: com.example.ui.Work
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Chat.route,
+            startDestination = Screen.Observatory.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            composable(Screen.Observatory.route) {
+                ObservatoryScreen(repository = controlPlaneRepository)
+            }
             composable(Screen.Chat.route) {
                 ChatScreen(viewModel = viewModel, workspaceViewModel = workspaceViewModel, onSettingsClick = { navController.navigate(Screen.Settings.route) })
             }

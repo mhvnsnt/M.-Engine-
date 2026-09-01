@@ -4,6 +4,15 @@ import com.example.ai.capabilities.boundary.AgencyBoundaryEvent
 import com.example.ai.capabilities.boundary.AgencyBoundaryState
 import com.example.ai.capabilities.boundary.AgencyBoundaryStateMachine
 
+import com.example.ai.capabilities.acquisition.*
+
+import com.example.ai.capabilities.evolution.LiberativeEvolutionEngine
+import com.example.ai.capabilities.evolution.LiberativeEvolutionEngineImpl
+import com.example.ai.capabilities.epistemic.ContinuousEpistemicEngine
+import com.example.ai.capabilities.epistemic.ContinuousEpistemicEngineImpl
+import com.example.ai.capabilities.tandem.TandemAgencyCoordinator
+import com.example.ai.capabilities.tandem.TandemAgencyCoordinatorImpl
+
 data class AgencyContext(
     val intent: String,
     val repositoryTarget: String,
@@ -28,6 +37,10 @@ class AutonomousAgencyRuntimeImpl(
     private val opportunityEngine: OpportunityEngine,
     private val workerPool: AutonomousWorkerPool,
     private val evidenceEngine: EvidenceAssuranceEngine,
+    private val capabilityAcquisitionEngine: CapabilityAcquisitionEngine = CapabilityAcquisitionEngineImpl(),
+    private val evolutionEngine: LiberativeEvolutionEngine = LiberativeEvolutionEngineImpl(),
+    private val epistemicEngine: ContinuousEpistemicEngine = ContinuousEpistemicEngineImpl(),
+    private val tandemCoordinator: TandemAgencyCoordinator = TandemAgencyCoordinatorImpl(ledger = agencyLedger, opportunityEngine = opportunityEngine),
     private val boundaryStateMachine: AgencyBoundaryStateMachine = AgencyBoundaryStateMachine()
 ) : AutonomousAgencyRuntime {
 
@@ -69,12 +82,60 @@ class AutonomousAgencyRuntimeImpl(
             
             // Handle simulated provider unavailability
             if (stage == "RESEARCH" && context.initialConstraints["mock_provider_fail"] == "true") {
+                 val req = MissingCapability(
+                     id = "COGNITIVE_RESEARCH_PROVIDER",
+                     type = com.example.ai.capabilities.acquisition.CapabilityType.COGNITIVE_MODEL,
+                     description = "No cognitive provider available to perform $stage"
+                 )
                  boundaryStateMachine.transition(AgencyBoundaryEvent(
                      AgencyBoundaryState.WAITING_FOR_EXTERNAL_CAPABILITY, 
-                     "No cognitive provider available to perform $stage",
-                     capabilityNeeded = "COGNITIVE_RESEARCH"
+                     req.description,
+                     capabilityNeeded = req.id
                  ))
-                 return AgencyResult(false, currentStage, "Halted: WAITING_FOR_EXTERNAL_CAPABILITY", processId, currentCost)
+                 
+                 // Suspend task and try to acquire capability autonomously
+                 val acquisitionResult = kotlinx.coroutines.runBlocking {
+                     capabilityAcquisitionEngine.acquire(req)
+                 }
+                 
+                 if (acquisitionResult.status == AcquisitionStatus.PROVISIONED) {
+                     boundaryStateMachine.transition(AgencyBoundaryEvent(
+                         AgencyBoundaryState.ACTING,
+                         "Capability acquired successfully. Resuming $stage."
+                     ))
+                     // Continue stage logic here...
+                 } else if (context.initialConstraints["allow_evolution_pivot"] == "true") {
+                     val evolutionPivot = evolutionEngine.suspendPerspective("Capability ${req.id} is strictly required for $stage")
+                     
+                     agencyLedger.recordEntry(AgencyLedgerEntry(
+                         id = "$processId-$stage-fail-pivot",
+                         intent = context.intent,
+                         authorizationStatus = "APPROVED",
+                         decision = AgencyDecision.PROCEED, // Changed from HALT to Pivot
+                         decisionReasoning = "Failed to acquire ${req.id}. Applying Liberative Evolution.",
+                         actionTaken = "Perspective Suspension applied",
+                         observation = evolutionPivot,
+                         resultStatus = "STRATEGY_PIVOT",
+                         evidenceId = null,
+                         learning = "Constraint encountered. Inverting assumption to explore new state space.",
+                         nextDecisionId = null
+                     ))
+                     
+                     // In a full implementation this would route to a different worker/strategy.
+                     // For now, we simulate finding an alternate path.
+                     boundaryStateMachine.transition(AgencyBoundaryEvent(
+                         AgencyBoundaryState.ACTING,
+                         "Pivoted strategy via Evolution Engine: $evolutionPivot"
+                     ))
+                 } else {
+                     return AgencyResult(
+                         isSuccess = false,
+                         stageReached = stage,
+                         message = "WAITING_FOR_EXTERNAL_CAPABILITY: ${req.description}",
+                         ledgerId = processId,
+                         costCents = currentCost
+                     )
+                 }
             }
 
             

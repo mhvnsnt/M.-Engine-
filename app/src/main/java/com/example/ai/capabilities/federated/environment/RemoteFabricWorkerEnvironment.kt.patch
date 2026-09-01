@@ -1,0 +1,65 @@
+--- app/src/main/java/com/example/ai/capabilities/federated/environment/RemoteFabricWorkerEnvironment.kt
++++ app/src/main/java/com/example/ai/capabilities/federated/environment/RemoteFabricWorkerEnvironment.kt
+@@ -4,6 +4,7 @@
+ import java.io.OutputStreamWriter
+ import java.net.HttpURLConnection
+ import java.net.URL
++import kotlinx.coroutines.delay
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.withContext
+ 
+@@ -107,7 +108,18 @@
+             connection.setRequestProperty("Content-Type", "application/json")
+             connection.doOutput = true
+             
+-            val jsonPayload = """{"command": "${command.replace("\"", "\\\"")}"}"""
++            val escapedCommand = command.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n")
++            val jsonPayload = """{
++                "jobId": "job_${System.currentTimeMillis()}",
++                "capability": "NATIVE_EXECUTION",
++                "workspace": { "mode": "EPHEMERAL" },
++                "task": {
++                    "type": "NATIVE_COMMAND",
++                    "command": "$escapedCommand"
++                },
++                "authorization": {},
++                "budget": {}
++            }"""
+             
+             OutputStreamWriter(connection.outputStream).use { writer ->
+                 writer.write(jsonPayload)
+@@ -118,11 +130,29 @@
+                 val responseStr = connection.inputStream.bufferedReader().use { it.readText() }
+                 val json = JSONObject(responseStr)
+                 
+-                return@withContext CommandResult(
+-                    exitCode = json.optInt("exitCode", -1),
+-                    stdout = json.optString("stdout", ""),
+-                    stderr = json.optString("stderr", "")
+-                )
++                val jobId = json.getString("jobId")
++                
++                // Poll for completion
++                while (true) {
++                    delay(500)
++                    val pollUrl = URL("$workerUrl/jobs/$jobId")
++                    val pollConn = pollUrl.openConnection() as HttpURLConnection
++                    pollConn.requestMethod = "GET"
++                    if (pollConn.responseCode == 200) {
++                        val pollStr = pollConn.inputStream.bufferedReader().use { it.readText() }
++                        val pollJson = JSONObject(pollStr)
++                        val status = pollJson.getString("status")
++                        if (status == "AWAITING_VERIFICATION" || status == "VERIFIED" || status == "FAILED") {
++                            val resultObj = pollJson.optJSONObject("result")
++                            return@withContext CommandResult(
++                                exitCode = resultObj?.optInt("exitCode", -1) ?: -1,
++                                stdout = resultObj?.optString("stdout", "") ?: "",
++                                stderr = resultObj?.optString("stderr", "") ?: ""
++                            )
++                        }
++                    }
++                }
++                
+             } else {
+                 return@withContext CommandResult(-1, "", "Failed with status code ${connection.responseCode}")
+             }

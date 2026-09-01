@@ -34,7 +34,7 @@ import com.example.data.SettingsRepository
 import com.example.ai.EmbeddingEngine
 import com.example.ai.TTSEngine
 
-import com.example.ui.MainScreen
+import com.example.ui.AppShell
 
 class MainActivity : ComponentActivity() {
     private lateinit var database: AppDatabase
@@ -81,7 +81,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen(viewModel = viewModel, workspaceViewModel = workspaceViewModel)
+                    AppShell(viewModel = viewModel, workspaceViewModel = workspaceViewModel)
                 }
             }
         }
