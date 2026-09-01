@@ -32,19 +32,34 @@ android {
     }
   }
 
+  // Both keystores are gitignored, so on CI and on any fresh clone neither file
+  // exists. Referencing one unconditionally made even `assembleDebug` fail at
+  // :app:validateSigningDebug — the build never reached packaging. Each config is
+  // now registered only when its keystore is actually present; otherwise the
+  // build type falls back to AGP's auto-generated debug key (debug) or produces
+  // an unsigned APK (release), which is far more useful than no APK at all.
+  //
+  // Credentials come from the environment, with the historical literals as a
+  // fallback so an existing local keystore keeps working unchanged.
+  val releaseKeystore = file("${rootDir}/release.keystore")
+  val debugKeystore = file("${rootDir}/debug.keystore")
+
   signingConfigs {
-    create("release") {
-      val keystorePath = "${rootDir}/release.keystore"
-      storeFile = file(keystorePath)
-      storePassword = "mengine123"
-      keyAlias = "release"
-      keyPassword = "mengine123"
+    if (releaseKeystore.exists()) {
+      create("release") {
+        storeFile = releaseKeystore
+        storePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: "mengine123"
+        keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "release"
+        keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: "mengine123"
+      }
     }
-    create("debugConfig") {
-      storeFile = file("${rootDir}/debug.keystore")
-      storePassword = "android"
-      keyAlias = "androiddebugkey"
-      keyPassword = "android"
+    if (debugKeystore.exists()) {
+      create("debugConfig") {
+        storeFile = debugKeystore
+        storePassword = System.getenv("DEBUG_STORE_PASSWORD") ?: "android"
+        keyAlias = System.getenv("DEBUG_KEY_ALIAS") ?: "androiddebugkey"
+        keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "android"
+      }
     }
   }
 
@@ -53,9 +68,13 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      signingConfig = signingConfigs.findByName("release")
     }
-    debug { signingConfig = signingConfigs.getByName("debugConfig") }
+    debug {
+      // findByName returns null when the keystore is absent; AGP then uses its
+      // own debug key, which is exactly what a debug build wants.
+      signingConfigs.findByName("debugConfig")?.let { signingConfig = it }
+    }
   }
   
   sourceSets {
