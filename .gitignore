@@ -10,9 +10,15 @@
 /.idea/assetWizardSettings.xml
 .DS_Store
 /build
+build/
 /captures
 .externalNativeBuild
 .cxx
 local.properties
 .env
 debug.keystore
+node_modules/
+
+# Control plane local ledger
+agency_ledger.db
+*.db

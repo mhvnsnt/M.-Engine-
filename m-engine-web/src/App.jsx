@@ -1,126 +1,159 @@
-import React, { useState } from 'react';
-import { Terminal, CheckCircle, Activity, Github, Shield, Layers, Box, Code } from 'lucide-react';
+import React, { useEffect, useState, useSyncExternalStore } from 'react'
+import {
+  Download,
+  Layers,
+  MessageSquare,
+  Settings as SettingsIcon,
+  Terminal,
+  WifiOff,
+} from 'lucide-react'
+import { getSettings, subscribe } from './lib/settings'
+import { probe } from './lib/controlPlane'
+import Chat from './screens/Chat'
+import Engine from './screens/Engine'
+import Capabilities from './screens/Capabilities'
+import Settings from './screens/Settings'
+
+const TABS = [
+  { id: 'chat', label: 'Chat', icon: MessageSquare, Screen: Chat },
+  { id: 'engine', label: 'Engine', icon: Terminal, Screen: Engine },
+  { id: 'capabilities', label: 'Reality', icon: Layers, Screen: Capabilities },
+  { id: 'settings', label: 'Settings', icon: SettingsIcon, Screen: Settings },
+]
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('missions');
-  const [input, setInput] = useState('');
-  
-  const bootstrapMission = {
-    id: "miss-bootstrap-001",
-    name: "Self-Audit & First Autonomous Web Update",
-    status: "IN_PROGRESS",
-    tasks: [
-      { text: "Inspect M. Engine repository recursively via true JGit", done: false },
-      { text: "Check reality limits (Web API, Remote Worker boundaries)", done: false },
-      { text: "Fix highest-value blocker preventing full independent dev-loop", done: false },
-      { text: "Provide REPRODUCTION_REGRESSION evidence", done: false }
-    ]
-  };
+  const settings = useSyncExternalStore(subscribe, getSettings)
+  const [tab, setTab] = useState('chat')
+  const [status, setStatus] = useState({ state: 'unconfigured' })
+  const [online, setOnline] = useState(navigator.onLine)
+  const [installEvent, setInstallEvent] = useState(null)
+
+  useEffect(() => {
+    const on = () => setOnline(true)
+    const off = () => setOnline(false)
+    addEventListener('online', on)
+    addEventListener('offline', off)
+    return () => {
+      removeEventListener('online', on)
+      removeEventListener('offline', off)
+    }
+  }, [])
+
+  // Chrome fires this instead of showing its own prompt; holding the event lets
+  // the app offer install at a moment that makes sense. iOS never fires it.
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault()
+      setInstallEvent(e)
+    }
+    addEventListener('beforeinstallprompt', handler)
+    addEventListener('appinstalled', () => setInstallEvent(null))
+    return () => removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  // Poll the control plane for the header pill. 20s is slow enough to be free
+  // on battery and fast enough that a restarted server shows up on its own.
+  useEffect(() => {
+    let cancelled = false
+    const run = () =>
+      probe(settings.controlPlaneUrl).then((s) => {
+        if (!cancelled) setStatus(s)
+      })
+    run()
+    const t = setInterval(run, 20000)
+    return () => {
+      cancelled = true
+      clearInterval(t)
+    }
+  }, [settings.controlPlaneUrl])
+
+  const active = TABS.find((t) => t.id === tab) ?? TABS[0]
+  const Screen = active.Screen
+  const openSettings = () => setTab('settings')
 
   return (
-    <div className="flex h-screen w-full bg-gray-950 text-gray-200">
-      {/* Sidebar */}
-      <div className="w-64 border-r border-gray-800 bg-gray-900 flex flex-col">
-        <div className="p-4 border-b border-gray-800 flex items-center gap-2">
-          <Terminal className="text-blue-400" />
-          <h1 className="font-bold text-lg tracking-wider">M. ENGINE</h1>
-        </div>
-        <nav className="flex-1 p-4 space-y-2">
-          <button onClick={() => setActiveTab('missions')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${activeTab === 'missions' ? 'bg-blue-900/30 text-blue-400' : 'hover:bg-gray-800'}`}>
-            <Activity size={18} /> Missions
-          </button>
-          <button onClick={() => setActiveTab('connectors')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${activeTab === 'connectors' ? 'bg-blue-900/30 text-blue-400' : 'hover:bg-gray-800'}`}>
-            <Github size={18} /> Connectors
-          </button>
-          <button onClick={() => setActiveTab('evidence')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${activeTab === 'evidence' ? 'bg-blue-900/30 text-blue-400' : 'hover:bg-gray-800'}`}>
-            <Shield size={18} /> Evidence Ledger
-          </button>
-          <button onClick={() => setActiveTab('capabilities')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${activeTab === 'capabilities' ? 'bg-blue-900/30 text-blue-400' : 'hover:bg-gray-800'}`}>
-            <Layers size={18} /> Capability Graph
-          </button>
-        </nav>
-        <div className="p-4 text-xs text-gray-500 border-t border-gray-800 flex justify-between">
-          <span>Web Client v1.0.0</span>
-          <span className="text-green-500 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 block"></span> Connected</span>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-gray-950">
-        <div className="flex-1 p-6 overflow-y-auto">
-          {activeTab === 'missions' && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2"><Activity /> Active Mission Loop</h2>
-              
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 shadow-xl">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <span className="text-xs font-mono text-blue-400 mb-1 block">{bootstrapMission.id}</span>
-                    <h3 className="text-xl font-bold">{bootstrapMission.name}</h3>
-                  </div>
-                  <span className="px-3 py-1 bg-blue-900/40 text-blue-400 rounded-full text-xs font-bold border border-blue-800">
-                    {bootstrapMission.status}
-                  </span>
-                </div>
-                
-                <div className="space-y-3 mt-6">
-                  {bootstrapMission.tasks.map((task, i) => (
-                    <div key={i} className="flex items-start gap-3 bg-gray-950 p-3 rounded border border-gray-800">
-                      <CheckCircle size={18} className={task.done ? "text-green-400" : "text-gray-600"} />
-                      <span className={task.done ? "text-gray-400 line-through" : "text-gray-200"}>{task.text}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-6 p-4 bg-black rounded border border-gray-800 font-mono text-sm text-green-400 h-32 overflow-y-auto">
-                  &gt; Executing Universal Reality Loop...<br/>
-                  &gt; UNDERSTAND: Parsing mission objectives...<br/>
-                  &gt; RETRIEVE: Checking capability graph for existing Web UI bounds...<br/>
-                  &gt; Awaiting external worker delegation...
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'connectors' && (
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2"><Github /> First-Class Connectors</h2>
-              <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Github size={32} />
-                  <div>
-                    <h3 className="font-bold text-lg">GitHub Application</h3>
-                    <p className="text-gray-400 text-sm">OAuth / Delegated Installation Flow</p>
-                  </div>
-                </div>
-                <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition-colors">
-                  Authorize GitHub
-                </button>
-              </div>
-            </div>
-          )}
+    <div className="flex h-[100dvh] flex-col bg-surface">
+      <header className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-surface-raised/60 px-4 py-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <Terminal size={20} className="shrink-0 text-accent" />
+          <span className="truncate font-semibold tracking-wide text-slate-100">M. ENGINE</span>
         </div>
 
-        {/* Universal Command Center Input */}
-        <div className="p-6 border-t border-gray-800 bg-gray-900">
-          <div className="max-w-4xl mx-auto relative">
-            <input 
-              type="text" 
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Command M. Engine to inspect, build, or fix..." 
-              className="w-full bg-gray-950 border border-gray-700 rounded-lg pl-4 pr-12 py-4 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner text-gray-100"
-            />
-            <button className="absolute right-3 top-3.5 p-1.5 bg-blue-600 hover:bg-blue-500 rounded text-white transition-colors">
-              <Code size={18} />
+        <div className="flex shrink-0 items-center gap-2">
+          {!online ? (
+            <span className="flex items-center gap-1 text-xs text-amber-400">
+              <WifiOff size={13} /> Offline
+            </span>
+          ) : null}
+
+          {installEvent ? (
+            <button
+              onClick={async () => {
+                installEvent.prompt()
+                await installEvent.userChoice
+                setInstallEvent(null)
+              }}
+              className="flex min-h-[36px] items-center gap-1.5 rounded-lg border border-accent bg-accent/15 px-2.5 text-xs font-medium text-blue-300"
+            >
+              <Download size={14} /> Install
             </button>
-          </div>
-          <div className="max-w-4xl mx-auto mt-2 text-xs text-gray-500 flex gap-4">
-            <span>Model: Default (Auto-Routed)</span>
-            <span>Evidence Engine: STRICT</span>
-          </div>
+          ) : null}
+
+          <StatusPill status={status} />
         </div>
-      </div>
+      </header>
+
+      <main className="min-h-0 flex-1 overflow-y-auto">
+        <Screen settings={settings} onOpenSettings={openSettings} />
+      </main>
+
+      <nav className="grid shrink-0 grid-cols-4 border-t border-line bg-surface-raised/80 pb-[env(safe-area-inset-bottom)]">
+        {TABS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            aria-current={tab === id ? 'page' : undefined}
+            className={`flex min-h-[56px] flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors ${
+              tab === id ? 'text-accent' : 'text-slate-500 active:text-slate-300'
+            }`}
+          >
+            <Icon size={20} />
+            {label}
+          </button>
+        ))}
+      </nav>
     </div>
-  );
+  )
+}
+
+function StatusPill({ status }) {
+  const tone = {
+    online: 'border-emerald-800 bg-emerald-950/50 text-emerald-300',
+    offline: 'border-red-900 bg-red-950/50 text-red-300',
+    unconfigured: 'border-line bg-surface text-slate-500',
+  }[status.state]
+
+  const label = {
+    online: 'Connected',
+    offline: 'No server',
+    unconfigured: 'Standalone',
+  }[status.state]
+
+  return (
+    <span
+      title={status.message ?? label}
+      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${tone}`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          status.state === 'online'
+            ? 'bg-emerald-400'
+            : status.state === 'offline'
+              ? 'bg-red-400'
+              : 'bg-slate-600'
+        }`}
+      />
+      {label}
+    </span>
+  )
 }
