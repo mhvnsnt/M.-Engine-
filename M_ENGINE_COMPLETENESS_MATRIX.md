@@ -47,15 +47,15 @@ only as good as its declaration index.
 
 | Measure | Value |
 | --- | ---: |
-| Production Kotlin files | 282 |
-| Production LOC | 31,041 |
-| Top-level declarations | 824 |
-| **Reachable from an entry point** | **197 files (69.9%)** |
-| **DISCONNECTED** | **85 files, ~5,800 LOC (30.1%)** |
+| Production Kotlin files | 288 |
+| Production LOC | 31,513 |
+| Top-level declarations | 831 |
+| **Reachable from an entry point** | **208 files (73.3%)** |
+| **DISCONNECTED** | **77 files, ~5,414 LOC (26.7%)** |
 | Files carrying simulation markers | 49 |
 | Total simulation markers | 97 |
 
-Roughly **one line in five of this codebase has never been able to execute.**
+Roughly **one line in six of this codebase has never been able to execute** (was one in five before the canonicalization pass).
 
 That is the actual bottleneck, and it is not a shortage of code. It is the gap
 between written and wired.
@@ -68,13 +68,13 @@ between written and wired.
 | --- | ---: | ---: | ---: | ---: | ---: | --- |
 | `ai/capabilities` | 69 | 9219 | 49/69 | 13 | 44 | PARTIAL / MARKERS PRESENT |
 | `ui` | 20 | 6059 | 19/20 | 2 | 12 | PARTIAL / MARKERS PRESENT |
-| `ai/capabilities/ecology` | 40 | 5283 | 18/40 | 6 | 12 | PARTIAL / MARKERS PRESENT |
+| `ai/capabilities/ecology` | 40 | 5283 | 19/40 | 6 | 12 | PARTIAL / MARKERS PRESENT |
+| `data` | 39 | 1812 | 38/39 | 2 | 0 | PARTIALLY CONNECTED |
 | `ai` | 16 | 1735 | 15/16 | 2 | 2 | PARTIAL / MARKERS PRESENT |
-| `data` | 33 | 1241 | 33/33 | 1 | 0 | CONNECTED (performs real I/O) |
 | `ai/cloud` | 7 | 1192 | 7/7 | 3 | 2 | IMPLEMENTED_UNVERIFIED (markers present) |
 | `ai/capabilities/federated/provider` | 17 | 906 | 16/17 | 14 | 3 | PARTIAL / MARKERS PRESENT |
 | `ai/capabilities/federated/environment` | 9 | 687 | 6/9 | 1 | 3 | PARTIAL / MARKERS PRESENT |
-| `ai/capabilities/memory` | 9 | 601 | 0/9 | 1 | 1 | DISCONNECTED |
+| `ai/capabilities/memory` | 9 | 616 | 5/9 | 1 | 1 | PARTIAL / MARKERS PRESENT |
 | `ai/capabilities/federated` | 7 | 523 | 2/7 | 3 | 4 | PARTIAL / MARKERS PRESENT |
 | `network` | 9 | 518 | 8/9 | 1 | 0 | PARTIALLY CONNECTED |
 | `ai/capabilities/acquisition` | 5 | 504 | 4/5 | 1 | 1 | PARTIAL / MARKERS PRESENT |
@@ -85,51 +85,43 @@ between written and wired.
 | `ai/capabilities/multimodal` | 3 | 205 | 0/3 | 0 | 3 | DISCONNECTED |
 | `ai/capabilities/tandem` | 4 | 184 | 4/4 | 0 | 1 | IMPLEMENTED_UNVERIFIED (markers present) |
 | `ai/capabilities/evolution` | 2 | 149 | 2/2 | 0 | 0 | CONNECTED (in-process only) |
+| `other` | 2 | 146 | 1/2 | 0 | 0 | PARTIALLY CONNECTED |
 | `ui/theme` | 3 | 142 | 1/3 | 0 | 0 | PARTIALLY CONNECTED |
 | `ai/capabilities/integration` | 2 | 124 | 0/2 | 0 | 2 | DISCONNECTED |
 | `ai/capabilities/boundary` | 3 | 121 | 1/3 | 0 | 0 | PARTIALLY CONNECTED |
 | `ai/capabilities/workspace` | 1 | 109 | 1/1 | 0 | 0 | CONNECTED (in-process only) |
-| `other` | 2 | 106 | 1/2 | 0 | 0 | PARTIALLY CONNECTED |
 | `ai/capabilities/mutation` | 1 | 78 | 1/1 | 0 | 0 | CONNECTED (in-process only) |
-| **TOTAL** | **282** | **31041** | **197/282** | | **97** | |
+| **TOTAL** | **288** | **31667** | **208/288** | | **97** | |
 
 ---
 
-## The finding that matters most
+## Memory: the crown jewels, now partly connected
 
-**The `ai/capabilities/memory` package is 100% disconnected — 9 files, 601 LOC.**
+The previous revision of this document reported `ai/capabilities/memory` as
+**100% disconnected** — the Level 0 ledger, context reconstruction, owner context
+and ontology federation all unreachable while the product ran conversations
+through a separate Room path.
 
-It contains, precisely, the systems Section 2 of the completion directive names
-as M. Engine's unique intelligence to preserve:
+**Measured now: 5 of 9 files reachable, 4 with real data flowing.**
 
-| File | Role in the stated architecture |
-| --- | --- |
-| `ImmutableConversationLedger.kt` | Level 0 raw record — "must never be replaced by summaries" |
-| `FileBackedConversationLedger.kt` | Its persistence |
-| `ContextReconstructionEngine.kt` | Context Reconstruction Engine |
-| `OwnerContextGraph.kt` | Owner Context Graph |
-| `OntologyFederation.kt` | Ontology Federation |
-| `SemanticResearchGraph.kt` | Semantic retrieval |
-| `ResearchHistoryEngine.kt` | Research memory |
-| `ResearchMemoryState.kt` | Memory state model |
-| `MemoryIndependenceCheck.kt` | Memory provenance guard |
+| File | Reachable | Real data flow | Physical verification | State |
+| --- | --- | --- | --- | --- |
+| `ImmutableConversationLedger` | YES | YES | Survives DB close/reopen | **PARTIALLY_VERIFIED** |
+| `ContextReconstructionEngine` | YES | YES | Consumes hydrated prefs + excludes superseded events | **PARTIALLY_VERIFIED** |
+| `OwnerContextGraph` | YES | YES | Hydrated from `terminology_preferences` | **PARTIALLY_VERIFIED** |
+| `OntologyFederation` | YES | constructed | Categories present, no claims flowing | IMPLEMENTED_UNVERIFIED |
+| `FileBackedConversationLedger` | *false positive* | NO | — | **OBSOLETE** — named only in comments |
+| `SemanticResearchGraph` | NO | NO | — | DISCONNECTED (Level 4) |
+| `ResearchHistoryEngine` | NO | NO | — | DISCONNECTED |
+| `ResearchMemoryState` | NO | NO | — | DISCONNECTED |
+| `MemoryIndependenceCheck` | NO | NO | — | DISCONNECTED (Level 6) |
 
-None of it is reachable from the running application.
+Gap: **Levels 2, 4 and 6 do not exist.** There is no project memory, no semantic
+retrieval on the canonical path, and no meta-memory. "Memory works" would be an
+overstatement; Level 0, Level 1 and Level 5 work.
 
-Conversations **do** persist — but through a *different* path: Room entities
-(`sessions`, `messages`, `memory_fragments`) via `ChatRepository`, which is fully
-connected. So there are two parallel memory architectures, and the one that is
-live is not the one the architecture documents describe.
-
-This is the highest-value wiring target in the repository, and it is the
-precondition for directive Sections 4 (Persistent Conversations) and 20 (Memory
-Completion). Neither can be honestly built on top of a ledger that cannot run.
-
-Other fully-disconnected packages:
-
-- `ai/capabilities/directed` — 10 files, 493 LOC (Directed Autonomy, `AutonomousOpportunityLoop`)
-- `ai/capabilities/multimodal` — 3 files, 205 LOC (Section 17, research acquisition)
-- `ai/capabilities/integration` — 2 files, 124 LOC
+Still fully disconnected: `ai/capabilities/directed` (10 files),
+`ai/capabilities/multimodal` (3), `ai/capabilities/integration` (2).
 
 ---
 
@@ -140,7 +132,7 @@ States use the vocabulary of `REALITY_CONTRACT.md`.
 | § | Capability | Measured state | Evidence |
 | --- | --- | --- | --- |
 | 3 | Universal Sidebar / Home | **PARTIAL** | The drawer is real and routes work. 5 of 10 destinations are literally `Text("… (WIP)")`: Home, Apps, Games, Workspaces, Agents |
-| 4 | Persistent conversations | **PARTIAL_REAL_IMPLEMENTATION** | Room `sessions`/`messages` persist. No titles, search, folders, pinning, archival, branching. The Immutable Ledger is DISCONNECTED |
+| 4 | Persistent conversations | **PARTIAL_REAL_IMPLEMENTATION** | Level 0 ledger now canonical and restart-verified. Still no titles, search, folders, pinning, archival, branching |
 | 5 | Project workspaces | **SCAFFOLDED** | `workspaces`/`files` entities exist; `WorkspaceScreen` is wired. No project↔conversation↔artifact association |
 | 6 | Library / artifacts | **MISSING** | Zero classes named `Library`. No artifact store, no provenance, no content hashing |
 | 7 | Agents & workers | **DISCONNECTED → now PARTIAL** | Provider layer connected this pass. No agent teams, no worker memory, no coordination |
@@ -154,8 +146,8 @@ States use the vocabulary of `REALITY_CONTRACT.md`.
 | 15–16 | Game dev / interoperability | **MISSING** | No engine adapters of any kind |
 | 17 | Research acquisition | **DISCONNECTED** | Entire `multimodal` package unreachable |
 | 18–19 | Media studio / previews | **MISSING** | No implementation |
-| 20 | Memory completion | **DISCONNECTED** | See above. Level 0 ledger unreachable |
-| 21 | Ontology federation | **DISCONNECTED** | `OntologyFederation.kt` unreachable. `astro_profiles` entity exists |
+| 20 | Memory completion | **PARTIALLY_VERIFIED** | Levels 0, 1, 5 live and verified. Levels 2, 4, 6 absent |
+| 21 | Ontology federation | **IMPLEMENTED_UNVERIFIED** | Now constructed and reachable with its four epistemic categories; no claims flow through it yet |
 | 22 | Geospatial opportunity | **PARTIAL** | Location entities + repository connected; `GeospatialSymbolicEngine` DISCONNECTED |
 | 23 | Security & owner control | **PARTIAL** | Governance endpoints real and verified. **No authentication on the control plane API at all** |
 | 24 | PWA/Android/cloud unification | **PARTIAL** | PWA and control plane verified end to end. Android and PWA share no identity, projects or ledger |

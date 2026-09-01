@@ -31,15 +31,13 @@ class ContextReconstructionEngine(
             emptyList()
         }
 
-        // 2. Fetch terminology constraints
-        // We'll pass them all or a filtered subset for the worker to respect
-        val constraints = listOf(
-            TerminologyPreference(
-                rejectedTerm = "Sovereignty",
-                preferredTerm = "Agentic Autonomy",
-                context = "M. Engine Operating Philosophy"
-            )
-        )
+        // 2. Terminology constraints come from the hydrated Owner Context Graph.
+        // These used to be a hardcoded literal here, which meant the owner's
+        // stated preference could only change by editing and recompiling the
+        // app — and that the "preference" was really the developer's, not the
+        // owner's. They are now data, loaded from persistent storage with
+        // provenance.
+        val constraints = ownerContext.allTerminologyPreferences()
 
         // 3. Filter Ontology Claims based on task domain
         val ownerName = ownerContext.identity?.identityFacts?.get("legalName")?.split(" ")?.firstOrNull() ?: "Owner"
@@ -48,12 +46,18 @@ class ContextReconstructionEngine(
 
         // 4. Resolve supersession in history (naive simulation for probe)
         // Here we'd query the ledger for events matching the task and resolve them.
+        // Only ACTIVE events are eligible: an event corrected by a later one
+        // must not be replayed to a worker as though it still stood. This is
+        // where supersession stops being bookkeeping and starts changing what
+        // the system actually believes.
         val historicalPrecedents = mutableListOf<String>()
         val recentEvents = ledger.queryEventsByTime(0, System.currentTimeMillis())
         val activeEvents = recentEvents.filter { it.supersededByEventId == null }
-        
-        // Add a few relevant resolved historical events
-        activeEvents.takeLast(3).forEach {
+
+        // Deliberately a small tail, not the whole ledger. Level 0 keeps
+        // everything; the reconstructed context carries only what the task
+        // needs, which is the entire point of reconstruction.
+        activeEvents.takeLast(MAX_HISTORICAL_PRECEDENTS).forEach {
             historicalPrecedents.add("Prior Event [${it.actor}]: ${it.rawContent}")
         }
 
@@ -65,6 +69,11 @@ class ContextReconstructionEngine(
         )
     }
     
+    companion object {
+        /** Keeps a long history from flooding a worker's context window. */
+        const val MAX_HISTORICAL_PRECEDENTS = 3
+    }
+
     fun resolveSupersession(eventId: String): ConversationEvent? {
         val chain = ledger.getProvenanceChain(eventId)
         return chain.lastOrNull() // The active event

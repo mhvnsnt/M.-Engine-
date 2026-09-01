@@ -2,7 +2,7 @@
   "rows": [
     {
       "file": "app/src/main/java/com/example/MainActivity.kt",
-      "lines": 90,
+      "lines": 130,
       "decls": [
         "MainActivity"
       ],
@@ -1747,7 +1747,7 @@
         "PhysicalOwnerIdentity",
         "GeospatialIdentityEngine"
       ],
-      "reached": false,
+      "reached": true,
       "realIO": false,
       "marks": {}
     },
@@ -2438,12 +2438,12 @@
     },
     {
       "file": "app/src/main/java/com/example/ai/capabilities/memory/ContextReconstructionEngine.kt",
-      "lines": 73,
+      "lines": 82,
       "decls": [
         "ContextReconstructionEngine",
         "TaskContext"
       ],
-      "reached": false,
+      "reached": true,
       "realIO": false,
       "marks": {
         "simulate": 1
@@ -2455,7 +2455,7 @@
       "decls": [
         "FileBackedConversationLedger"
       ],
-      "reached": false,
+      "reached": true,
       "realIO": true,
       "marks": {}
     },
@@ -2469,7 +2469,7 @@
         "ImmutableConversationLedger",
         "InMemoryConversationLedger"
       ],
-      "reached": false,
+      "reached": true,
       "realIO": false,
       "marks": {}
     },
@@ -2495,19 +2495,19 @@
         "OntologyClaim",
         "OntologyFederationEngine"
       ],
-      "reached": false,
+      "reached": true,
       "realIO": false,
       "marks": {}
     },
     {
       "file": "app/src/main/java/com/example/ai/capabilities/memory/OwnerContextGraph.kt",
-      "lines": 56,
+      "lines": 62,
       "decls": [
         "OwnerGoal",
         "TerminologyPreference",
         "OwnerContextGraph"
       ],
-      "reached": false,
+      "reached": true,
       "realIO": false,
       "marks": {}
     },
@@ -2664,7 +2664,7 @@
     },
     {
       "file": "app/src/main/java/com/example/data/AppDatabase.kt",
-      "lines": 22,
+      "lines": 24,
       "decls": [
         "AppDatabase"
       ],
@@ -2700,6 +2700,16 @@
       ],
       "reached": true,
       "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/CanonicalMemory.kt",
+      "lines": 124,
+      "decls": [
+        "CanonicalMemory"
+      ],
+      "reached": true,
+      "realIO": true,
       "marks": {}
     },
     {
@@ -2745,9 +2755,29 @@
     },
     {
       "file": "app/src/main/java/com/example/data/ChatRepository.kt",
-      "lines": 44,
+      "lines": 116,
       "decls": [
         "ChatRepository"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/ConversationEventDao.kt",
+      "lines": 61,
+      "decls": [
+        "ConversationEventDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/ConversationEventEntity.kt",
+      "lines": 42,
+      "decls": [
+        "ConversationEventEntity"
       ],
       "reached": true,
       "realIO": false,
@@ -2887,7 +2917,7 @@
     },
     {
       "file": "app/src/main/java/com/example/data/MessageDao.kt",
-      "lines": 28,
+      "lines": 32,
       "decls": [
         "MessageDao"
       ],
@@ -2906,6 +2936,14 @@
       "marks": {}
     },
     {
+      "file": "app/src/main/java/com/example/data/Migrations.kt",
+      "lines": 79,
+      "decls": [],
+      "reached": false,
+      "realIO": false,
+      "marks": {}
+    },
+    {
       "file": "app/src/main/java/com/example/data/MissionDao.kt",
       "lines": 23,
       "decls": [
@@ -2920,6 +2958,28 @@
       "lines": 17,
       "decls": [
         "MissionEntity"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/OwnerContextEntities.kt",
+      "lines": 79,
+      "decls": [
+        "OwnerGoalEntity",
+        "TerminologyPreferenceEntity",
+        "OwnerContextDao"
+      ],
+      "reached": true,
+      "realIO": false,
+      "marks": {}
+    },
+    {
+      "file": "app/src/main/java/com/example/data/RoomConversationLedger.kt",
+      "lines": 108,
+      "decls": [
+        "RoomConversationLedger"
       ],
       "reached": true,
       "realIO": false,

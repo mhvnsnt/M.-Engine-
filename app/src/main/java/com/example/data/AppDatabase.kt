@@ -3,7 +3,7 @@ package com.example.data
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [MessageEntity::class, StyleProfileEntity::class, EndpointEntity::class, MemoryFragment::class, WorkspaceEntity::class, FileEntity::class, SessionEntity::class, UserConstraints::class, LocationSnapshot::class, RegionProfile::class, AstroProfile::class, GraphNode::class, CapabilityKnowledgeEntity::class, JobEntity::class, MissionEntity::class, CapabilityStateEntity::class], version = 10, exportSchema = false)
+@Database(entities = [MessageEntity::class, StyleProfileEntity::class, EndpointEntity::class, MemoryFragment::class, WorkspaceEntity::class, FileEntity::class, SessionEntity::class, UserConstraints::class, LocationSnapshot::class, RegionProfile::class, AstroProfile::class, GraphNode::class, CapabilityKnowledgeEntity::class, JobEntity::class, MissionEntity::class, CapabilityStateEntity::class, ConversationEventEntity::class, OwnerGoalEntity::class, TerminologyPreferenceEntity::class], version = 12, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun messageDao(): MessageDao
     abstract fun sessionDao(): SessionDao
@@ -18,4 +18,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun jobDao(): JobDao
     abstract fun missionDao(): MissionDao
     abstract fun capabilityStateDao(): CapabilityStateDao
+    abstract fun conversationEventDao(): ConversationEventDao
+    abstract fun ownerContextDao(): OwnerContextDao
 }

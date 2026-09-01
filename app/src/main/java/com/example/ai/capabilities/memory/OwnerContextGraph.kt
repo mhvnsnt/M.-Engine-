@@ -49,6 +49,12 @@ class OwnerContextGraph(private val ontologyEngine: OntologyFederationEngine) {
 
     fun getGoalsByCategory(category: String): List<OwnerGoal> = goals.filter { it.category == category }
     
+    /** All hydrated preferences. Empty until [hydrate] has run. */
+    fun allTerminologyPreferences(): List<TerminologyPreference> = terminologyPreferences.toList()
+
+    /** All hydrated goals, regardless of category. */
+    fun allGoals(): List<OwnerGoal> = goals.toList()
+
     fun getPreferredTerminology(term: String): String? {
         return terminologyPreferences.find { it.rejectedTerm.contains(term, ignoreCase = true) }?.preferredTerm
     }
