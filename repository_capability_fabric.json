@@ -1,0 +1,172 @@
+{
+  "generated": "2026-09-02",
+  "method": "git clone --filter=tree:0 --no-checkout --depth 1; tree inspection only",
+  "repositories": [
+    {
+      "name": "mhvnsnt/Bannon",
+      "visibility": "public",
+      "role": "target",
+      "stack": [
+        "TypeScript",
+        "C++",
+        "UnrealEngine"
+      ],
+      "state": "in_session"
+    },
+    {
+      "name": "mhvnsnt/M.-Engine-",
+      "visibility": "public",
+      "role": "governor",
+      "stack": [
+        "Kotlin",
+        "Compose",
+        "Ktor",
+        "React"
+      ],
+      "state": "in_session"
+    },
+    {
+      "name": "mhvnsnt/bolt.diy-M",
+      "visibility": "public",
+      "role": "capability_source",
+      "stack": [
+        "Remix",
+        "TypeScript"
+      ],
+      "files": 538,
+      "capabilities": [
+        "code_ide",
+        "sandboxed_execution",
+        "repository_mutation",
+        "model_routing",
+        "deploy",
+        "persistence"
+      ],
+      "llm_providers": [
+        "amazon-bedrock",
+        "anthropic",
+        "cerebras",
+        "cohere",
+        "deepseek",
+        "fireworks",
+        "github",
+        "google",
+        "groq",
+        "huggingface",
+        "hyperbolic",
+        "lmstudio",
+        "mistral",
+        "moonshot",
+        "ollama",
+        "open-router",
+        "openai",
+        "openai-like",
+        "perplexity",
+        "together",
+        "xai",
+        "z-ai"
+      ],
+      "integration_mode": "federate_via_capability_provider",
+      "state": "STRUCTURALLY_VERIFIED"
+    },
+    {
+      "name": "mhvnsnt/Wrestli6game-3",
+      "visibility": "public",
+      "role": "reference",
+      "stack": [
+        "React",
+        "Vite",
+        "TypeScript"
+      ],
+      "files": 48,
+      "capabilities": [
+        "modular_wrestling_engine",
+        "creation_suite",
+        "tournament_mode",
+        "match_rating"
+      ],
+      "integration_mode": "reference_for_decomposition",
+      "state": "STRUCTURALLY_VERIFIED"
+    },
+    {
+      "name": "mhvnsnt/M-Hero-Simulator-",
+      "visibility": "public",
+      "role": "reference",
+      "stack": [
+        "TypeScript"
+      ],
+      "files": 39,
+      "integration_mode": "none",
+      "state": "STRUCTURALLY_VERIFIED"
+    },
+    {
+      "name": "mhvnsnt/UnrealEngine",
+      "visibility": "private",
+      "role": "capability_source",
+      "stack": [
+        "UnrealEngine 5.8"
+      ],
+      "capabilities": [
+        "lyra_source"
+      ],
+      "state": "STRUCTURALLY_VERIFIED"
+    },
+    {
+      "name": "mhvnsnt/CODEDUMMY",
+      "visibility": "private",
+      "role": "unknown",
+      "state": "PENDING_ATTACH",
+      "note": "named in Bannon CLAUDE.md as the other half of the two-agent team"
+    },
+    {
+      "name": "mhvnsnt/CODEDUMMY-",
+      "visibility": "private",
+      "role": "unknown",
+      "state": "PENDING_ATTACH"
+    },
+    {
+      "name": "mhvnsnt/God-Mode-OS",
+      "visibility": "private",
+      "role": "unknown",
+      "state": "PENDING_ATTACH"
+    },
+    {
+      "name": "mhvnsnt/God-Mode-OS-D3MN",
+      "visibility": "private",
+      "role": "unknown",
+      "state": "PENDING_ATTACH"
+    },
+    {
+      "name": "mhvnsnt/God-Mode-OS-D3MN-V2",
+      "visibility": "private",
+      "role": "unknown",
+      "state": "PENDING_ATTACH"
+    },
+    {
+      "name": "mhvnsnt/URBAN-MAYHEM-",
+      "visibility": "private",
+      "role": "unknown",
+      "state": "PENDING_ATTACH"
+    },
+    {
+      "name": "mhvnsnt/Dream-Infinite-World",
+      "visibility": "private",
+      "role": "unknown",
+      "state": "PENDING_ATTACH"
+    }
+  ],
+  "external_acquisitions": [
+    {
+      "name": "anti-hero-game-studio/LyraStarterGame_FPS",
+      "commit": "af1c7af8",
+      "engine": "5.0",
+      "provides": [
+        "lyra_content",
+        "31 ABP",
+        "5 ControlRig",
+        "3 IKRig"
+      ],
+      "state": "STRUCTURALLY_VERIFIED"
+    }
+  ]
+}
