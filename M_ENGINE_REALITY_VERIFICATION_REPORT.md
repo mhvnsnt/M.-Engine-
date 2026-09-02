@@ -191,3 +191,96 @@ needs the Project model, which does not exist.
 ## Unreal Worker Artifact Transport (Phase 3)
 - **Status:** `PARTIALLY_VERIFIED`
 - **Result:** Physical byte transport from `worker.js` via HTTP POST (`/artifacts`) to the M. Engine governor has been executed end-to-end using a synthesized test artifact. The file was successfully written, hashed, uploaded, and stored in the canonical `Library` system with proven hash equality. Unreal Engine execution itself remains `IMPLEMENTED_UNVERIFIED` pending physical workstation enrollment.
+
+---
+
+# RECONCILIATION PASS — 2026-09-02
+
+Two agents worked in parallel. This section records what was measured when their
+work was brought together, including two corrections to earlier claims made in
+this very document.
+
+## Confirmed by independent measurement — Google AI Studio's work
+
+**Artifact transport is real.** `library/artifacts/` contains a physically
+stored artifact whose FILENAME IS THE SHA-256 OF ITS CONTENT:
+
+```
+sha256(content) = aa4f406646607c08fc45f351bd6b1584d98bfca09e785c631f39546a6af835ae
+filename        = aa4f406646607c08fc45f351bd6b1584d98bfca09e785c631f39546a6af835ae
+```
+
+Content-addressed storage with proven hash equality. `PARTIALLY_VERIFIED` is the
+correct state and the claim stands.
+
+**The control-plane sync endpoints are real on the server.** `/api/v1/ledger/sync`
+and `/api/v1/ledger/events` exist in `ControlPlaneServer.kt` and are backed by a
+real SQLite table with `INSERT OR IGNORE` and a `timestamp > since` query. Not a
+stub. Kept as written.
+
+## CORRECTION 1 — the Android half of that sync could never run
+
+**State: was `DISCONNECTED`, presented as working. Now `IMPLEMENTED_UNVERIFIED`.**
+
+`RemoteControlPlaneRepository` holds connection state PER INSTANCE, and only
+`refreshState()` sets `CONNECTED`. Four instances existed and
+`RoomConversationLedger` constructed a private fifth that nothing ever
+connected. Both sync calls gate on `CONNECTED`, so both short-circuited forever.
+Both call sites then swallowed the outcome (`// Offline or failed`, `// Ignore`).
+
+This is the exact failure the contract exists to catch: **a subsystem that is
+silent when it works and silent when it cannot run at all is not observable, and
+an unobservable subsystem cannot be called verified.**
+
+Fixed: one shared instance, `NotConnectedException`, and a
+`LedgerSyncDiagnostic` StateFlow carrying `NEVER_ATTEMPTED / NOT_CONNECTED /
+FAILED / SYNCED`. Guarded by `CanonicalSyncWiringTest`, 6/6.
+
+It is **`IMPLEMENTED_UNVERIFIED`, not `VERIFIED`**: the wiring is now correct and
+the outcome is readable, but no Android build has synced against a live control
+plane. That demonstration is what would move it, and it has not happened.
+
+Two further defects fixed on the way, both present on BOTH surfaces:
+
+- **The pull cursor raced the device against itself.** It read the newest event
+  overall, which every locally authored message pushes past anything the control
+  plane still holds — so remote events older than your last message could never
+  arrive. The cursor is now the newest event that arrived BY SYNC.
+- **The remote push sat on the canonical write path.** `appendSuspending` is the
+  single funnel for every message and `backfillLedgerFromMessages` drives it once
+  per historical message at launch, so a working sync would have made startup N
+  sequential round-trips. Level 0 durability is local and no longer waits on the
+  network.
+
+## CORRECTION 2 — "red on two test assertions" was wrong
+
+This document previously attributed `build_and_verify` being red to two
+`FederatedCapabilityFabricTest` assertions. **It was red at `detekt`, the FIRST
+step, so the test step never ran at all.**
+
+The baseline was generated at `fb84e50`; `ProjectRepository`, `ProjectEntities`
+and `ProjectsScreen` arrived afterwards in PR #8, so their findings were new and
+correctly rejected. The gate was working; the reading of it was not. 48 findings
+→ 0, fixed in code rather than baselined.
+
+A separate regression from the same blind spot: `CapabilityFabricTest` asserted
+7 providers while PR #9 registered an eighth. CI never reported it because
+detekt failed first.
+
+**Lesson, and it is the same one twice: a red step masks every step behind it.
+Read WHICH step failed before attributing the failure.**
+
+## Still not verified, and not claimed
+
+- **No worker has executed against a live federated backend.** Unchanged. Eight
+  tests remain red because they require services that do not exist in CI
+  (OpenHands, Playwright, a physical worker) or reach `api.github.com`. They are
+  honest failures and were deliberately NOT mocked into passing.
+- **Unreal execution remains `IMPLEMENTED_UNVERIFIED`** pending physical
+  workstation enrollment.
+- **Memory Levels 2, 4 and 6 still do not exist.**
+- **The three surfaces still do not share canonical state IN PRACTICE.** The
+  mechanism now exists and is correctly wired on all three, which is a real
+  change from "no mechanism at all" — but a mechanism that has never carried a
+  message between two surfaces is not shared state. It is a path that should
+  work.
