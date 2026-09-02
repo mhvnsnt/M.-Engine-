@@ -200,18 +200,34 @@ Two agents worked in parallel. This section records what was measured when their
 work was brought together, including two corrections to earlier claims made in
 this very document.
 
+> **Status: CI wiring and content-address identity have been independently
+> verified. End-to-end artifact transport and physical Unreal Engine compilation
+> remain pending external runtime evidence.**
+>
+> Removing a phantom CI failure means the repository is finally testing what it
+> genuinely can test at this stage. It does NOT mean the thing that check
+> claimed to test now works.
+
 ## Confirmed by independent measurement — Google AI Studio's work
 
-**Artifact transport is real.** `library/artifacts/` contains a physically
-stored artifact whose FILENAME IS THE SHA-256 OF ITS CONTENT:
+**Content-address identity: `VERIFIED`.** `library/artifacts/` contains a
+physically stored artifact whose FILENAME IS THE SHA-256 OF ITS CONTENT:
 
 ```
 sha256(content) = aa4f406646607c08fc45f351bd6b1584d98bfca09e785c631f39546a6af835ae
 filename        = aa4f406646607c08fc45f351bd6b1584d98bfca09e785c631f39546a6af835ae
 ```
 
-Content-addressed storage with proven hash equality. `PARTIALLY_VERIFIED` is the
-correct state and the claim stands.
+Independently recomputed here, not read off a report. Content-addressed storage
+with proven hash equality.
+
+**Full artifact transport end to end: `PARTIALLY_VERIFIED`.** The property above
+is one link in the chain, not the chain. Nothing has yet carried a real artifact
+through the complete Android → control plane → remote worker path, so the
+identity scheme is proven while the transport it serves is not.
+
+**Unreal-generated artifacts: `IMPLEMENTED_UNVERIFIED`.** No physical Unreal
+worker has generated or returned one.
 
 **The control-plane sync endpoints are real on the server.** `/api/v1/ledger/sync`
 and `/api/v1/ledger/events` exist in `ControlPlaneServer.kt` and are backed by a
@@ -284,3 +300,40 @@ Read WHICH step failed before attributing the failure.**
   change from "no mechanism at all" — but a mechanism that has never carried a
   message between two surfaces is not shared state. It is a path that should
   work.
+
+## OBSERVED CI EVIDENCE — run 33588343177, head `b3c76d8`
+
+Recorded from the real GitHub runner, not from a local sandbox.
+
+| Step | Result |
+| --- | --- |
+| `./gradlew lintDebug detekt` | **BUILD SUCCESSFUL in 5m 56s** |
+| `./gradlew testDebugUnitTest` | 164 tests completed, **5 failed** |
+
+**The detekt gate passing on a real runner is the first time this repository's
+`build_and_verify` has got past its first step since PR #8.** Before this commit
+it died at `./gradlew: Permission denied`, exit 126.
+
+**The sandbox was not the target, and measuring on the target changed the
+answer.** Locally 9 tests failed; on the runner 5 did. Four of the local
+failures — `FederatedCapabilityFabricTest` (both), `ObservabilityRealityTest`,
+`CapabilityLifecyclePersistenceTest` — **pass in CI**. They reach
+`api.github.com`, which this sandbox proxies and the runner does not. Reshaping
+them against local conditions would have broken working tests.
+
+The 5 real failures:
+
+| Test | Cause | Status |
+| --- | --- | --- |
+| `ExampleRobolectricTest` | `UnsupportedOperationException` in `DefaultSdkProvider` | **FIXED** — `sdk = [36]` needs JDK 21; CI runs JDK 17. Pinned to 33, matching the other 9 |
+| `BrowserAutomationIntegrationTest` | `ConnectException` | Needs a live Playwright service |
+| `RemoteCodingDelegationTest` | `ConnectException` | Needs a live OpenHands worker |
+| `TaskRoutingIntegrationTest` | `ConnectException` | Needs a live physical worker |
+| `LiveCodingRealityTrialTest` | `WORKER_UNREACHABLE` | Needs a live physical worker |
+
+The last four are integration tests against services that do not exist in CI.
+They are honest failures and are **deliberately left failing**: mocking them
+would manufacture a pass for a capability that does not work, and skipping or
+quarantining them would hide it. They are the same fact already recorded above —
+**no worker has executed against a live federated backend** — expressed as a red
+check instead of a sentence. They go green when a worker is enrolled, not before.
