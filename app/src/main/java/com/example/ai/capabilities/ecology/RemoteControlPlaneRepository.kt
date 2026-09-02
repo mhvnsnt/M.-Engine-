@@ -430,6 +430,28 @@ class RemoteControlPlaneRepository {
         refreshState()
     }
 
+    suspend fun syncConversationEvents(events: List<Map<String, Any>>): Map<String, Any> {
+        if (_connectionState.value == RemoteGovernorState.CONNECTED) {
+            try {
+                return getApi().syncConversationEvents(events)
+            } catch (e: Exception) {
+                // offline
+            }
+        }
+        return emptyMap()
+    }
+
+    suspend fun getConversationEvents(since: Long): Result<List<Map<String, Any>>> {
+        if (_connectionState.value == RemoteGovernorState.CONNECTED) {
+            try {
+                return Result.success(getApi().getConversationEvents(since))
+            } catch (e: Exception) {
+                return Result.failure(e)
+            }
+        }
+        return Result.failure(IllegalStateException("Not connected"))
+    }
+
     suspend fun emergencyStop() {
         try {
             getApi().triggerEmergencyStop()

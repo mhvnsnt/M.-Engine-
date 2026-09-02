@@ -32,6 +32,12 @@ class RoomConversationLedger(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
     private val remoteSync: RemoteControlPlaneRepository = RemoteControlPlaneRepository()
 ) : ImmutableConversationLedger {
+    init {
+        scope.launch {
+            syncFromCanonical()
+        }
+    }
+
 
     /**
      * Appends without blocking the caller. Chat send paths run on the main
