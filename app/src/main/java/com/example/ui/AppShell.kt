@@ -40,7 +40,7 @@ fun AppShell(
 ) {
     val isOnboardingComplete by viewModel.settingsRepository.isOnboardingCompleteFlow.collectAsStateWithLifecycle(initialValue = false)
     val coroutineScope = rememberCoroutineScope()
-    val controlPlaneRepository = remember { RemoteControlPlaneRepository() }
+    val controlPlaneRepository = remember { RemoteControlPlaneRepository.shared }
 
     // Constructs the federated provider layer. Until this existed, the whole
     // federated/provider package was unreachable from any entry point.
@@ -171,7 +171,10 @@ fun AppShell(
                 }
                 composable(ShellRoute.Library.route) {
                     if (projects != null) LibraryScreen(projects = projects)
-                    else Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                    else Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = androidx.compose.ui.Alignment.Center,
+                    ) {
                         Text("Library unavailable: project store not attached")
                     }
                 }

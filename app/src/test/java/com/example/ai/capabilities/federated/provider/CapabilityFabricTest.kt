@@ -45,13 +45,29 @@ class CapabilityFabricTest {
                     minio = "http://127.0.0.1:1",
                     postgresHost = "127.0.0.1",
                     postgresPort = 1,
+                    // Pinned rather than left at the 8770 default: a test that
+                    // depends on nothing happening to listen on the real port
+                    // is flaky by construction.
+                    unrealWorker = "http://127.0.0.1:1",
                 ),
             )
 
             val catalog = fabric.probeAll()
 
-            // All seven providers must be registered and reported on.
-            assertEquals(7, catalog.size)
+            // Every registered provider must be reported on. Unreal joined the
+            // fabric as the eighth; a provider that is registered but missing
+            // from the catalogue is invisible to the owner, which is the whole
+            // failure this test exists to catch.
+            assertEquals(8, catalog.size)
+
+            // Nothing is listening on the Unreal worker port here, so it must
+            // read UNAVAILABLE — never AVAILABLE by virtue of being configured.
+            val unreal = catalog.single { it.providerId == "unreal_remote_worker" }
+            assertEquals(
+                "a worker with nothing listening must not read AVAILABLE",
+                FabricNodeState.UNAVAILABLE,
+                unreal.status,
+            )
 
             val liteLlm = catalog.single { it.providerId == "litellm_primary" }
             assertEquals(

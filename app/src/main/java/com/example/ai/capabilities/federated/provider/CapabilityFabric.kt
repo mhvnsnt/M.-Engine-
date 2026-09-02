@@ -50,7 +50,11 @@ class CapabilityFabric(
         registry.register(PlaywrightBrowserProvider(PlaywrightClient(endpoints.playwright)))
         registry.register(MinIOStorageProvider(MinIOClient(endpoints.minio)))
         registry.register(PostgresDatabaseProvider(PostgresClient(endpoints.postgresHost, endpoints.postgresPort)))
-        registry.register(UnrealExecutionProvider(UnrealWorkerClient(endpoints.unrealWorker, endpoints.unrealWorkerToken)))
+        registry.register(
+            UnrealExecutionProvider(
+                UnrealWorkerClient(endpoints.unrealWorker, endpoints.unrealWorkerToken),
+            ),
+        )
 
         // The native fallback runs in-process, so it is the one provider that is
         // available with no external runtime at all.
