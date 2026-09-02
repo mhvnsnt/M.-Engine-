@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import com.example.ai.capabilities.ecology.RemoteControlPlaneRepository
 
 /**
  * The canonical Level 0 authority: `ImmutableConversationLedger` backed by the
@@ -29,6 +30,7 @@ import kotlinx.coroutines.runBlocking
 class RoomConversationLedger(
     private val dao: ConversationEventDao,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO),
+    private val remoteSync: RemoteControlPlaneRepository = RemoteControlPlaneRepository()
 ) : ImmutableConversationLedger {
 
     /**
@@ -43,6 +45,46 @@ class RoomConversationLedger(
     /** Use where the caller must observe the write, e.g. tests and migrations. */
     suspend fun appendSuspending(event: ConversationEvent) {
         dao.append(event.toEntity())
+        
+        // Push to canonical sync API
+        try {
+            val payload = mapOf(
+                "eventId" to event.eventId,
+                "timestamp" to event.timestamp,
+                "actor" to event.actor.name,
+                "content" to event.rawContent,
+                "source" to "ANDROID",
+                "conversationId" to event.provenance.conversationId
+            )
+            remoteSync.syncConversationEvents(listOf(payload))
+        } catch (e: Exception) {
+            // Offline or failed
+        }
+    }
+
+    suspend fun syncFromCanonical() {
+        try {
+            // Find latest timestamp
+            val latest = dao.recentActive(1).firstOrNull()?.timestamp ?: 0L
+            val res = remoteSync.getConversationEvents(latest)
+            val list = res.getOrNull() ?: emptyList()
+            for (ev in list) {
+                val entity = ConversationEventEntity(
+                    eventId = ev["eventId"] as? String ?: continue,
+                    timestamp = (ev["timestamp"] as? Number)?.toLong() ?: 0L,
+                    actor = ev["actor"] as? String ?: "SYSTEM",
+                    rawContent = ev["content"] as? String ?: "",
+                    sourcePlatform = ev["source"] as? String ?: "UNKNOWN",
+                    conversationId = ev["conversationId"] as? String ?: "default",
+                    referencedArtifacts = "",
+                    supersededByEventId = null,
+                    migratedFrom = null
+                )
+                dao.append(entity)
+            }
+        } catch (e: Exception) {
+            // Ignore
+        }
     }
 
     override fun getEvent(eventId: String): ConversationEvent? =

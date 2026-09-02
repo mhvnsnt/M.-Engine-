@@ -4,6 +4,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 import retrofit2.http.Path
 import retrofit2.http.Body
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,6 +78,13 @@ interface ControlPlaneApi {
 
     @POST("/api/v1/development_signals")
     suspend fun sendDevelopmentSignal(@Body body: Map<String, String>): Map<String, Any>
+
+
+    @POST("/api/v1/ledger/sync")
+    suspend fun syncConversationEvents(@Body events: List<Map<String, Any>>): Map<String, Any>
+
+    @GET("/api/v1/ledger/events")
+    suspend fun getConversationEvents(@Query("since") since: Long): List<Map<String, Any>>
 
     @POST("/api/v1/control_plane/emergency_stop")
     suspend fun triggerEmergencyStop(): Map<String, String>

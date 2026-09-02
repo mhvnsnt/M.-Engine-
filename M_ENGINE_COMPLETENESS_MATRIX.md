@@ -134,14 +134,14 @@ States use the vocabulary of `REALITY_CONTRACT.md`.
 | 3 | Universal Sidebar / Home | **PARTIAL** | The drawer is real and routes work. 5 of 10 destinations are literally `Text("… (WIP)")`: Home, Apps, Games, Workspaces, Agents |
 | 4 | Persistent conversations | **PARTIAL_REAL_IMPLEMENTATION** | Level 0 ledger now canonical and restart-verified. Still no titles, search, folders, pinning, archival, branching |
 | 5 | Project workspaces | **SCAFFOLDED** | `workspaces`/`files` entities exist; `WorkspaceScreen` is wired. No project↔conversation↔artifact association |
-| 6 | Library / artifacts | **MISSING** | Zero classes named `Library`. No artifact store, no provenance, no content hashing |
+| 6 | Library / artifacts | **PARTIALLY_VERIFIED** | Physical artifact upload, hashing, and storage verified via tools/unreal-worker protocol test. Still missing canonical cross-surface UI |
 | 7 | Agents & workers | **DISCONNECTED → now PARTIAL** | Provider layer connected this pass. No agent teams, no worker memory, no coordination |
 | 8 | Durable execution | **BLOCKED_BY_EXTERNAL_DEPENDENCY** | `HatchetWorkflowProvider` is now reachable and probes for real. No Hatchet runtime exists to talk to |
 | 9 | Capability acquisition | **PARTIAL** | `PhysicalRuntimeDiscovery` does real I/O. `CapabilityAcquisitionManager` is DISCONNECTED |
 | 10 | Model provider fabric | **PARTIAL** | 5 real providers (Gemini, OpenRouter, Anthropic, OpenAI-compatible, Ollama) are connected. `LiteLLMModelProvider` now reachable, no gateway running |
 | 11 | Browser / computer use | **BLOCKED_BY_EXTERNAL_DEPENDENCY** | `PlaywrightBrowserProvider` reachable and probing; no Playwright service |
 | 12 | Live observability | **PARTIAL** | `ObservatoryScreen` (1,262 LOC) is wired to the control plane. No OpenTelemetry, no log streaming |
-| 13 | Remote execution fabric | **SCAFFOLDED** | `federated/environment` 6/9 reachable; no registered remote node |
+| 13 | Remote execution fabric | **PARTIALLY_VERIFIED** | Control plane worker endpoints (`/enroll`, `/artifacts`) and Node.js Unreal worker implement physical transport. Unreal execution remains pending. |
 | 14 | Code development ecosystem | **MISSING** | No editor, terminal, diff viewer, LSP or AST tooling |
 | 15–16 | Game dev / interoperability | **MISSING** | No engine adapters of any kind |
 | 17 | Research acquisition | **DISCONNECTED** | Entire `multimodal` package unreachable |

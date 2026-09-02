@@ -1,118 +1,42 @@
-package com.example.ai.cloud
-import java.sql.Connection
-import java.sql.DriverManager
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
+import sys
 
-class SQLiteLedgerRepository(private val dbPath: String = "jdbc:sqlite:agency_ledger.db") : AgencyLedgerRepository {
-    private val capabilitiesStore = ConcurrentHashMap<String, MutableMap<String, Any>>()
-    private val activeWorkerJobs = ConcurrentHashMap<String, MutableMap<String, Any>>()
-    private var activeCycleState: MutableMap<String, Any>? = null
-    private val tandemSignals = mutableListOf<Map<String, Any>>()
-    private val causalRecords = mutableListOf<Map<String, Any>>()
+def chop_and_fix(filepath, is_postgres):
+    with open(filepath, 'r') as f:
+        lines = f.readlines()
+
+    # Find the FIRST occurrence of syncConversationEvents
+    cutoff = -1
+    for i, line in enumerate(lines):
+        if "override fun syncConversationEvents" in line:
+            cutoff = i
+            break
+
+    if cutoff != -1:
+        lines = lines[:cutoff]
+        # Just in case the previous line was a hanging closing brace
+        pass
+    else:
+        # if not found, we just strip the last '}'
+        # But wait, there might be duplicate enrollWorkers instead?
+        # Let's find the FIRST enrollWorker
+        cutoff_enroll = -1
+        for i, line in enumerate(lines):
+            if "override fun enrollWorker" in line:
+                cutoff_enroll = i
+                break
+        
+        if cutoff_enroll != -1:
+            lines = lines[:cutoff_enroll]
+
+    content = "".join(lines)
+    # Ensure it ends cleanly (no hanging open braces)
+    # Actually, we chopped right before enrollWorker or syncConversationEvents.
+    # The previous method was recordDevelopmentSignal
+    
+    methods = """
     private val pendingJobs = mutableListOf<Map<String, Any>>(
         mapOf("jobId" to "TEST-JOB-001", "operation" to "TEST_ARTIFACT", "params" to emptyMap<String, Any>())
     )
-
-    private fun getConnection(): Connection {
-        return DriverManager.getConnection(dbPath)
-    }
-
-    override fun initDatabase() {
-        // stub
-    }
-
-    override fun isEmergencyStopActive(): Boolean {
-        return false
-    }
-
-    override fun setEmergencyStop(active: Boolean) {
-        // stub
-    }
-
-    override fun isAutonomyEnabled(): Boolean {
-        return false
-    }
-
-    override fun setAutonomyEnabled(enabled: Boolean) {
-        // stub
-    }
-
-    override fun startCycle(cycleId: String, runId: String) {
-        // stub
-    }
-
-    override fun getCycleStatus(cycleId: String): String? {
-        return null
-    }
-
-    override fun completeCycle(cycleId: String, exitReason: String) {
-        // stub
-    }
-
-    override fun failCycle(cycleId: String, exitReason: String) {
-        // stub
-    }
-
-    override fun emitMindstream(cycleId: String, entryType: String, content: String) {
-        // stub
-    }
-
-    override fun getMindstream(): List<String> {
-        return emptyList()
-    }
-
-    override fun getPendingOpportunities(): List<String> {
-        return emptyList()
-    }
-
-    override fun addOpportunity(description: String, source: String) {
-        // stub
-    }
-
-    override fun getCapabilities(): List<Map<String, Any>> {
-        return emptyList()
-    }
-
-    override fun verifyCapability(id: String): Map<String, Any> {
-        return emptyMap()
-    }
-
-    override fun runRealitySweep(): Map<String, Any> {
-        return emptyMap()
-    }
-
-    override fun getCapabilityTransitions(): List<Map<String, Any>> {
-        return emptyList()
-    }
-
-    override fun toggleCapability(id: String, enabled: Boolean): Map<String, Any> {
-        return emptyMap()
-    }
-
-    override fun getActiveCycle(): Map<String, Any>? {
-        return null
-    }
-
-    override fun cancelCycle(cycleId: String): Boolean {
-        return false
-    }
-
-    override fun cancelWorker(workerId: String): Boolean {
-        return false
-    }
-
-    override fun getTelemetry(): Map<String, Any> {
-        return emptyMap()
-    }
-
-    override fun getTandemDevelopment(): Map<String, Any> {
-        return emptyMap()
-    }
-
-    override fun recordDevelopmentSignal(type: String, project: String, intent: String): Map<String, Any> {
-        return emptyMap()
-    }
 
     override fun enrollWorker(workerId: String, os: String, unrealVersion: String, repository: String, currentBranch: String, currentCommit: String): Map<String, Any> {
         return mapOf("status" to "ENROLLED", "workerId" to workerId)
@@ -150,7 +74,12 @@ class SQLiteLedgerRepository(private val dbPath: String = "jdbc:sqlite:agency_le
             conn.createStatement().use { stmt ->
                 stmt.execute("CREATE TABLE IF NOT EXISTS conversation_events (event_id TEXT PRIMARY KEY, timestamp INTEGER, actor TEXT, content TEXT, source TEXT, conversation_id TEXT)")
             }
-            conn.prepareStatement("INSERT OR IGNORE INTO conversation_events (event_id, timestamp, actor, content, source, conversation_id) VALUES (?, ?, ?, ?, ?, ?)").use { stmt ->
+            val sql = if (is_postgres) {
+                "INSERT INTO conversation_events (event_id, timestamp, actor, content, source, conversation_id) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (event_id) DO NOTHING"
+            } else {
+                "INSERT OR IGNORE INTO conversation_events (event_id, timestamp, actor, content, source, conversation_id) VALUES (?, ?, ?, ?, ?, ?)"
+            }
+            conn.prepareStatement(sql).use { stmt ->
                 for (event in events) {
                     stmt.setString(1, event["eventId"] as? String ?: "")
                     stmt.setLong(2, (event["timestamp"] as? Number)?.toLong() ?: 0L)
@@ -185,5 +114,17 @@ class SQLiteLedgerRepository(private val dbPath: String = "jdbc:sqlite:agency_le
         }
         return results
     }
-
 }
+"""
+
+    if "is_postgres" in str(is_postgres):
+        # We need the actual bool
+        pass
+
+    methods = methods.replace("is_postgres", "true" if is_postgres else "false")
+    
+    with open(filepath, 'w') as f:
+        f.write(content + methods)
+
+chop_and_fix('/app/applet/cloud_control_plane/src/main/kotlin/com/example/ai/cloud/SQLiteLedgerRepository.kt', False)
+chop_and_fix('/app/applet/cloud_control_plane/src/main/kotlin/com/example/ai/cloud/PostgresLedgerRepository.kt', True)

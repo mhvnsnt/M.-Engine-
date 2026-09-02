@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Send, Square, Trash2 } from 'lucide-react'
 import { PROVIDERS, streamChat } from '../lib/providers'
-import { appendMessage, clearMessages, isAvailable, loadMessages } from '../lib/db'
+import { appendMessage, clearMessages, isAvailable, loadMessages, syncFromCanonical } from '../lib/db'
 import { Button, ErrorNote, inputClass } from '../components/ui'
 
 export default function Chat({ settings, onOpenSettings }) {
@@ -18,8 +18,7 @@ export default function Chat({ settings, onOpenSettings }) {
       setReady(true)
       return
     }
-    loadMessages()
-      .then(setMessages)
+    syncFromCanonical().then(() => loadMessages()).then(setMessages)
       .catch(() => {
         /* history is a convenience; a failure here must not block chat */
       })

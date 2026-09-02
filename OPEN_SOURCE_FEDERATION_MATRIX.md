@@ -111,3 +111,13 @@ doubles as the install list: standing up any one of these backends flips its row
 to `REAL_AND_CONNECTED` with no code change.
 
 Sources: [MinIO AGPLv3 announcement](https://www.min.io/blog/from-open-source-to-free-and-open-source-minio-is-now-fully-licensed-under-gnu-agplv3), [minio/minio LICENSE](https://github.com/minio/minio/blob/master/LICENSE), [MinIO commercial licence](https://www.min.io/commercial-license), [OpenHands Cloud API docs](https://docs.openhands.dev/usage/cloud/cloud-api)
+
+## Artifact Storage & Object Store Licensing
+**Requirement:** The worker needs a canonical `Library` location to return build artifacts (Unreal `.uasset`, APKs, binaries, logs) so they can be securely requested and stored.
+
+**Evaluation of MinIO:**
+MinIO is a popular S3-compatible object store, but it is licensed under **AGPLv3**. While client interaction over a network API is generally considered safe, deploying, bundling, or extending MinIO alongside the M. Engine control plane as a tightly coupled S3 provider risks AGPL distribution restrictions on the broader project. M. Engine intends to avoid mandatory GPL/AGPL inheritance for the control plane.
+
+**Decision (IMPLEMENTED_UNVERIFIED):** 
+1. **Local Filesystem Adapter (Current):** For development and single-node federation, artifacts are stored directly on the host under `/app/applet/library/artifacts/` utilizing an explicit local filesystem abstraction.
+2. **Federated Object Storage:** Future integration will support direct API payloads to any S3-compatible endpoint (like AWS S3 or GCP Cloud Storage) configured at the Governor level, avoiding bundled S3 server-side dependencies.

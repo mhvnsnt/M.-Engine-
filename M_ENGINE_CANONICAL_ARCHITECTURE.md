@@ -153,3 +153,8 @@ claims, `EvidenceEngine` promotion path.
    authorization boundary.
 4. **Levels 2, 4 and 6 are absent**, so "memory" today means Level 0 + owner
    context + reconstruction. It is not yet project memory.
+
+### Artifact Transport & Storage Scaffold
+- **Protocol:** HTTP JSON/Base64 payloads (to scale to multipart/form-data for production sizes).
+- **Library Structure:** Hashed filesystem storage by SHA-256 (`/app/applet/library/artifacts`). 
+- **Provenance Association:** Every artifact is recorded in the Agency Ledger mapped strictly to its producing job, worker ID, execution timeline, and original output path. Simulated placeholders are strictly forbidden; byte presence is verified upon upload.

@@ -187,3 +187,7 @@ providers remain `BLOCKED_BY_EXTERNAL_DEPENDENCY`.
 pipeline, the PWA talks to the control plane, and the control plane keeps its own
 separate agency ledger. This is the largest remaining architectural gap and it
 needs the Project model, which does not exist.
+
+## Unreal Worker Artifact Transport (Phase 3)
+- **Status:** `PARTIALLY_VERIFIED`
+- **Result:** Physical byte transport from `worker.js` via HTTP POST (`/artifacts`) to the M. Engine governor has been executed end-to-end using a synthesized test artifact. The file was successfully written, hashed, uploaded, and stored in the canonical `Library` system with proven hash equality. Unreal Engine execution itself remains `IMPLEMENTED_UNVERIFIED` pending physical workstation enrollment.

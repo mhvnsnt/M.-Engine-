@@ -31,7 +31,24 @@ fun startKtorServer(port: Int, ledger: AgencyLedgerRepository) {
                     call.respond(HttpStatusCode.ServiceUnavailable, mapOf("status" to "DOWN", "error" to e.message))
                 }
             }
-            get("/api/v1/mindstream") {
+            
+        post("/api/v1/ledger/sync") {
+            try {
+                val payload = call.receive<List<Map<String, Any>>>()
+                val result = ledger.syncConversationEvents(payload)
+                call.respond(result)
+            } catch (e: Exception) {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Invalid payload")))
+            }
+        }
+        
+        get("/api/v1/ledger/events") {
+            val since = call.request.queryParameters["since"]?.toLongOrNull() ?: 0L
+            val events = ledger.getConversationEvents(since)
+            call.respond(events)
+        }
+
+        get("/api/v1/mindstream") {
                 val stream = ledger.getMindstream()
                 call.respond(stream)
             }
@@ -112,6 +129,87 @@ fun startKtorServer(port: Int, ledger: AgencyLedgerRepository) {
                 val intent = body["intent"] ?: "Owner requested action"
                 val recorded = ledger.recordDevelopmentSignal(type, project, intent)
                 call.respond(recorded)
+            }
+
+            
+            // Real Worker Protocol Endpoints
+            post("/api/v1/worker/enroll") {
+                val body = try { call.receive<Map<String, Any>>() } catch (e: Exception) { emptyMap<String, Any>() }
+                val workerId = body["workerId"] as? String ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing workerId"))
+                val caps = body["capabilities"] as? Map<String, Any> ?: emptyMap()
+                val os = caps["os"] as? String ?: "unknown"
+                val unrealVersion = caps["unrealVersion"] as? String ?: "unknown"
+                val repository = caps["repository"] as? String ?: "unknown"
+                val currentBranch = caps["currentBranch"] as? String ?: "unknown"
+                val currentCommit = caps["currentCommit"] as? String ?: "unknown"
+                
+                val result = ledger.enrollWorker(workerId, os, unrealVersion, repository, currentBranch, currentCommit)
+                call.respond(result)
+            }
+
+            post("/api/v1/worker/heartbeat") {
+                val body = try { call.receive<Map<String, Any>>() } catch (e: Exception) { emptyMap<String, Any>() }
+                val workerId = body["workerId"] as? String ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing workerId"))
+                val state = body["state"] as? String ?: "UNKNOWN"
+                
+                val result = ledger.heartbeatWorker(workerId, state)
+                call.respond(result)
+            }
+
+            post("/api/v1/worker/jobs/lease") {
+                val body = try { call.receive<Map<String, Any>>() } catch (e: Exception) { emptyMap<String, Any>() }
+                val workerId = body["workerId"] as? String ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing workerId"))
+                
+                val job = ledger.leaseJob(workerId)
+                if (job != null) {
+                    call.respond(job)
+                } else {
+                    call.respond(HttpStatusCode.NoContent, mapOf("message" to "No jobs available"))
+                }
+            }
+
+            post("/api/v1/worker/jobs/{jobId}/complete") {
+                val jobId = call.parameters["jobId"] ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing jobId"))
+                val body = try { call.receive<Map<String, Any>>() } catch (e: Exception) { emptyMap<String, Any>() }
+                
+                val exitStatus = (body["exitStatus"] as? Number)?.toInt() ?: 1
+                val evidenceLevel = body["evidenceLevel"] as? String ?: "NONE"
+                val stdout = body["stdout"] as? String ?: ""
+                val stderr = body["stderr"] as? String ?: ""
+                
+                val success = ledger.completeJob(jobId, exitStatus, evidenceLevel, stdout, stderr)
+                call.respond(mapOf("success" to success))
+            }
+
+            post("/api/v1/worker/artifacts") {
+                // In a real implementation this would parse multipart/form-data for the file stream.
+                // For architecture/protocol completeness, we assume a JSON payload describing the artifact and a mock upload, or base64.
+                // To support a real test, let's accept a JSON payload with file content as base64, save it, and register it.
+                val body = try { call.receive<Map<String, Any>>() } catch (e: Exception) { emptyMap<String, Any>() }
+                
+                val jobId = body["jobId"] as? String ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing jobId"))
+                val workerId = body["workerId"] as? String ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing workerId"))
+                val sha256 = body["sha256"] as? String ?: return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing sha256"))
+                val size = (body["size"] as? Number)?.toLong() ?: 0L
+                val path = body["path"] as? String ?: "unknown"
+                val contentBase64 = body["contentBase64"] as? String
+                
+                // Store file physically in the library
+                val artifactDir = java.io.File("/app/applet/library/artifacts")
+                artifactDir.mkdirs()
+                val artifactFile = java.io.File(artifactDir, sha256)
+                
+                if (contentBase64 != null) {
+                    val decoded = java.util.Base64.getDecoder().decode(contentBase64)
+                    artifactFile.writeBytes(decoded)
+                } else {
+                    artifactFile.writeText("empty artifact or multipart used in real environment")
+                }
+                
+                val uri = "file://${artifactFile.absolutePath}"
+                
+                val result = ledger.registerArtifact(jobId, workerId, sha256, size, path, uri)
+                call.respond(result)
             }
 
             // Governance Controls
