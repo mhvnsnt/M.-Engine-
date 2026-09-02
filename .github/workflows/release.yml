@@ -24,7 +24,7 @@ jobs:
       run: ./gradlew assembleRelease || gradle assembleRelease
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       with:
         files: app/build/outputs/apk/release/app-release.apk
         generate_release_notes: true
