@@ -57,59 +57,71 @@ export async function appendMessage(message) {
     ts: message.ts ?? Date.now() 
   }
   await tx('readwrite', (store) => store.add(record))
-  
-  // Sync to control plane
+
+  // The local write is the durable act and has already happened. The push is
+  // deliberately not awaited: sending a message must not wait on the control
+  // plane, and a failure here must not look like a failure to save.
   const cpUrl = getSettings().controlPlaneUrl
   if (cpUrl) {
-    try {
-      const payload = [{
-        eventId: record.id,
-        timestamp: record.ts,
-        actor: record.role === 'user' ? 'OWNER' : 'M_ENGINE',
-        content: record.content,
-        source: 'PWA',
-        conversationId: 'default'
-      }]
-      await fetch(cpUrl + '/api/v1/ledger/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-    } catch (e) {
-      console.error('Failed to sync message to canonical ledger', e)
-    }
+    const payload = [{
+      eventId: record.id,
+      timestamp: record.ts,
+      actor: record.role === 'user' ? 'OWNER' : 'M_ENGINE',
+      content: record.content,
+      source: 'PWA',
+      conversationId: 'default',
+    }]
+    fetch(cpUrl + '/api/v1/ledger/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch((e) => console.error('Failed to sync message to canonical ledger', e))
   }
   return record
+}
+
+/**
+ * High-water mark of events that ARRIVED BY SYNC.
+ *
+ * Deliberately not the newest message overall: every message typed here is
+ * newer than anything the control plane already holds, so using the overall
+ * newest would push the cursor past events this device has never seen and make
+ * them permanently unreachable.
+ */
+async function lastSyncedTimestamp() {
+  const all = await tx('readonly', (store) => store.getAll())
+  const list = Array.isArray(all) ? all : []
+  return list.reduce((max, m) => (m.syncedFrom && m.ts > max ? m.ts : max), 0)
 }
 
 export async function syncFromCanonical() {
   const cpUrl = getSettings().controlPlaneUrl
   if (!cpUrl) return
-  
-  try {
-    // Get latest timestamp we have
-    let lastTs = 0
-    const local = await loadMessages(1)
-    if (local && local.length > 0) lastTs = local[0].ts
 
-    const res = await fetch(cpUrl + '/api/v1/ledger/events?since=' + lastTs)
-    if (res.ok) {
-      const events = await res.json()
-      if (events.length > 0) {
-        await tx('readwrite', (store) => {
-          for (const ev of events) {
-            // Only add if source isn't PWA, to avoid duplicate rendering (or just let UI handle it)
-            store.put({
-              id: ev.eventId,
-              role: ev.actor === 'OWNER' ? 'user' : 'assistant',
-              content: ev.content,
-              ts: ev.timestamp
-            })
-          }
+  try {
+    const since = await lastSyncedTimestamp()
+    const res = await fetch(cpUrl + '/api/v1/ledger/events?since=' + since)
+    if (!res.ok) {
+      console.error('Canonical sync rejected', res.status)
+      return
+    }
+    const events = await res.json()
+    if (!events.length) return
+
+    await tx('readwrite', (store) => {
+      for (const ev of events) {
+        store.put({
+          id: ev.eventId,
+          role: ev.actor === 'OWNER' ? 'user' : 'assistant',
+          content: ev.content,
+          ts: ev.timestamp,
+          // Marks the row as control-plane-sourced, and is what the cursor
+          // above reads back. put() keyed by eventId makes a re-pull idempotent.
+          syncedFrom: ev.source || 'CANONICAL',
         })
       }
-    }
-  } catch(e) {
+    })
+  } catch (e) {
     console.error('Canonical sync failed', e)
   }
 }
