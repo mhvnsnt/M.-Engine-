@@ -14,7 +14,20 @@ enum class CapabilityType {
     ARTIFACT_STORAGE,
 
     /** Unreal / game-engine compilation and packaging on a remote worker. */
-    GAME_ENGINE_BUILD
+    GAME_ENGINE_BUILD,
+
+    /**
+     * 3D asset normalisation and conversion on a worker that has the DCC tool
+     * installed. Separate from ARTIFACT_STORAGE: storage keeps bytes, this
+     * transforms them and is where provenance is earned.
+     */
+    ASSET_PIPELINE,
+
+    /**
+     * A hosted development workbench — editor, workspace, repository operations
+     * and sandboxed execution — federated rather than reimplemented.
+     */
+    DEVELOPMENT_WORKBENCH
 }
 
 data class CapabilityProbeResult(

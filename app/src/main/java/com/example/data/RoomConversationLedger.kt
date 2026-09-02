@@ -86,7 +86,10 @@ class RoomConversationLedger(
      */
     suspend fun appendSuspending(event: ConversationEvent) {
         dao.append(event.toEntity())
-        scope.launch { pushToCanonical(event) }
+        // runCatching for the same reason as syncFromCanonical: this is launched
+        // and nobody is awaiting it, so an escape would be an uncaught crash
+        // attributed to whatever ran next rather than to the sync.
+        scope.launch { runCatching { pushToCanonical(event) } }
     }
 
     /** Suspending push, exposed so tests can observe the outcome. */
@@ -121,7 +124,16 @@ class RoomConversationLedger(
      * so remote events older than your latest local message can never arrive.
      */
     suspend fun syncFromCanonical() {
-        val since = dao.latestSyncedTimestamp(SYNC_ORIGIN) ?: 0L
+        // The cursor read touches the database, and this method is launched from
+        // init on a SupervisorJob scope. An unguarded throw here (a closed
+        // database, most often) escapes into the uncaught handler instead of
+        // being reported — which is how a background sync takes down something
+        // that never called it. Guarded, and recorded as a real outcome.
+        val since = runCatching { dao.latestSyncedTimestamp(SYNC_ORIGIN) ?: 0L }
+            .getOrElse { error ->
+                recordFailure(error, push = false)
+                return
+            }
         remoteSync.getConversationEvents(since)
             .onSuccess { list ->
                 val entities = list.mapNotNull { ev ->
@@ -141,12 +153,16 @@ class RoomConversationLedger(
                     )
                 }
                 // IGNORE on conflict makes a re-pull a no-op, so a reset cursor
-                // costs bandwidth but can never duplicate history.
-                val inserted = dao.appendAll(entities).count { it != -1L }
-                _syncDiagnostic.value = _syncDiagnostic.value.copy(
-                    lastPull = LedgerSyncOutcome.SYNCED,
-                    pulledEvents = _syncDiagnostic.value.pulledEvents + inserted,
-                )
+                // costs bandwidth but can never duplicate history. Guarded for
+                // the same reason as the cursor read above.
+                runCatching { dao.appendAll(entities).count { it != -1L } }
+                    .onSuccess { inserted ->
+                        _syncDiagnostic.value = _syncDiagnostic.value.copy(
+                            lastPull = LedgerSyncOutcome.SYNCED,
+                            pulledEvents = _syncDiagnostic.value.pulledEvents + inserted,
+                        )
+                    }
+                    .onFailure { error -> recordFailure(error, push = false) }
             }
             .onFailure { error -> recordFailure(error, push = false) }
     }

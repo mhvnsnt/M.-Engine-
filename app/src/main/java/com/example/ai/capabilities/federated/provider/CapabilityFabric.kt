@@ -55,6 +55,12 @@ class CapabilityFabric(
                 UnrealWorkerClient(endpoints.unrealWorker, endpoints.unrealWorkerToken),
             ),
         )
+        registry.register(
+            BlendForgeProvider(
+                BlendForgeClient(endpoints.blendForge, endpoints.blendForgeToken),
+            ),
+        )
+        registry.register(BoltDiyProvider(BoltDiyClient(endpoints.boltDiy)))
 
         // The native fallback runs in-process, so it is the one provider that is
         // available with no external runtime at all.
@@ -137,6 +143,15 @@ data class FabricEndpoints(
      */
     val unrealWorker: String = "http://localhost:8770",
     val unrealWorkerToken: String = "",
+    /**
+     * BlendForge runs headless Blender in a container behind a Redis/BullMQ
+     * queue, so like Unreal it is a remote worker rather than anything the
+     * phone can host.
+     */
+    val blendForge: String = "http://localhost:8790",
+    val blendForgeToken: String = "",
+    /** A running bolt.diy instance. Its Remix dev server default is 5173. */
+    val boltDiy: String = "http://localhost:5173",
 )
 
 /**

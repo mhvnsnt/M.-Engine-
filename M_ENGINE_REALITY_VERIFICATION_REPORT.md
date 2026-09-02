@@ -337,3 +337,70 @@ would manufacture a pass for a capability that does not work, and skipping or
 quarantining them would hide it. They are the same fact already recorded above —
 **no worker has executed against a live federated backend** — expressed as a red
 check instead of a sentence. They go green when a worker is enrolled, not before.
+
+---
+
+## FEDERATION PASS — two measured adapters (2026-09-02)
+
+Both were justified by repository inspection before any code was written, and
+both are `IMPLEMENTED_UNVERIFIED`: they probe correctly against nothing, and
+nothing has yet answered them.
+
+### `BlendForgeProvider` — `ASSET_PIPELINE`
+
+Federates CODEDUMMY's `blendforge/` worker (BullMQ + Redis in front of headless
+Blender in a container). Bannon already normalises models, but as local scripts a
+human runs one at a time; the gap was never the algorithms, it was that nothing
+could ASK for a conversion and get a recorded artifact back.
+
+**Three evidence stages, deliberately not collapsed:**
+
+```
+worker reachable   !=  Blender present
+Blender present    !=  job completed
+job completed      !=  the artifact is what was asked for
+```
+
+`probe()` can only establish the first two. A worker that is up with no Blender,
+or with an unreachable queue, reads `PARTIALLY_VERIFIED` — a queue that accepts
+jobs nothing will ever run is a distinct and dangerous state from one that works.
+
+**The operation set is an ALLOWLIST of three** — `inspect`, `normalize`,
+`convert`. The worker runs Blender with a Python script and a shell behind it, so
+a passthrough provider would make the fabric an arbitrary-execution hole with a
+friendly name. `BlendForgeAllowlistTest` pins this: `exec`, `shell`, `bash`,
+`python`, `eval`, `../convert`, `convert;rm -rf /` and `convert && whoami` all
+fail to resolve, and a non-allowlisted objective is refused before any dispatch.
+
+The provider does NOT assert artifact hashes. It returns the worker's own record
+as evidence; verifying that hash against the bytes is the Artifact Authority's
+job, not the reporter's.
+
+### `BoltDiyProvider` — `DEVELOPMENT_WORKBENCH`
+
+Federates a running bolt.diy instance rather than reimplementing an IDE inside an
+Android app. Probes `/api/configured-providers`, which answers only once the
+server has actually loaded its provider registry — a plain page fetch would
+return HTML from a server that cannot yet route a model call.
+
+**A REPOSITORY IS NOT A CAPABILITY.** It reports `AVAILABLE` only when an
+instance answers, and says so in the gap message. Reachable with zero configured
+model providers reads `PARTIALLY_VERIFIED`: workspace and repository operations
+would work, model routing would not.
+
+`execute()` returns `NOT_IMPLEMENTED` and says why. bolt.diy's routes are a
+private interface that moves between versions; guessing at them would produce a
+provider that looks wired and fails on first use. Probing is honest today.
+
+### A defect this pass found in the previous one
+
+The full suite caught `CanonicalSyncWiringTest` failing with
+`UncaughtExceptionsBeforeTest`. `syncFromCanonical()` read the DAO outside any
+guard while being launched from `init` on a `SupervisorJob` scope, so a closed
+database threw into the uncaught handler and surfaced in whatever test ran NEXT.
+
+Google's original blanket `catch { // Ignore }` hid this — at the cost of hiding
+everything, which is what made the sync unobservable in the first place. The fix
+guards each database touchpoint and routes failures to `LedgerSyncDiagnostic`,
+keeping the observability while stopping the leak. **Restoring the blanket catch
+would have made the symptom disappear and the defect remain.**

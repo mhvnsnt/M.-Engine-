@@ -49,6 +49,8 @@ class CapabilityFabricTest {
                     // depends on nothing happening to listen on the real port
                     // is flaky by construction.
                     unrealWorker = "http://127.0.0.1:1",
+                    blendForge = "http://127.0.0.1:1",
+                    boltDiy = "http://127.0.0.1:1",
                 ),
             )
 
@@ -58,7 +60,7 @@ class CapabilityFabricTest {
             // fabric as the eighth; a provider that is registered but missing
             // from the catalogue is invisible to the owner, which is the whole
             // failure this test exists to catch.
-            assertEquals(8, catalog.size)
+            assertEquals(10, catalog.size)
 
             // Nothing is listening on the Unreal worker port here, so it must
             // read UNAVAILABLE — never AVAILABLE by virtue of being configured.
@@ -68,6 +70,17 @@ class CapabilityFabricTest {
                 FabricNodeState.UNAVAILABLE,
                 unreal.status,
             )
+
+            // Same rule for the two federated providers added alongside it: a
+            // repository being present is not a capability, and neither is a
+            // configured endpoint.
+            listOf("blendforge_asset_worker", "boltdiy_workbench").forEach { id ->
+                assertEquals(
+                    "$id must not read AVAILABLE with nothing listening",
+                    FabricNodeState.UNAVAILABLE,
+                    catalog.single { it.providerId == id }.status,
+                )
+            }
 
             val liteLlm = catalog.single { it.providerId == "litellm_primary" }
             assertEquals(
