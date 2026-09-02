@@ -20,7 +20,8 @@ Nothing here has been built or run. Machine-readable twin:
 | `mhvnsnt/UnrealEngine` | private | — | UE 5.8 | Epic fork. **Source of Lyra** (`Samples/Games/Lyra`) | acquired — see `BANNON_LYRA_FULL_INTEGRATION_MATRIX.md` |
 | `mhvnsnt/CODEDUMMY` | private | **1,999** | TS + React + C + Python | **ATTACHED AND AUDITED — see below** | **HIGH** |
 | `mhvnsnt/CODEDUMMY-` | private | — | ? | second CODEDUMMY | PENDING_ATTACH |
-| `mhvnsnt/God-Mode-OS`, `-D3MN`, `-D3MN-V2` | private | — | ? | The God Mode OS referenced throughout Bannon's `CLAUDE.md`; `BANNON_GODMODE` is its in-game front end | **PENDING_ATTACH — likely high** |
+| `mhvnsnt/God-Mode-OS-D3MN-V2` | private | **519** | TS + React + Python | **ATTACHED AND AUDITED — see below** | **HIGHEST** |
+| `mhvnsnt/God-Mode-OS`, `-D3MN` | private | — | ? | earlier generations of the same system | PENDING_ATTACH |
 | `mhvnsnt/URBAN-MAYHEM-` | private | — | ? | Another game | PENDING_ATTACH |
 | `mhvnsnt/Dream-Infinite-World` | private | — | ? | Unknown | PENDING_ATTACH |
 
@@ -128,6 +129,71 @@ searches.
 planning to "reuse CODEDUMMY's memory system" would find nothing there. Recorded
 so the mistake is not made from the directory name — the same class of error as
 `mdickie_bases/` in Bannon.
+
+---
+
+## God-Mode-OS-D3MN-V2 — attached and audited
+
+`3b9bdf4`, 519 files, 45 MB, package name `god-mode-nexus`. 268 `.ts`, 143
+`.tsx`, 18 `.py`. **76 runtime dependencies.** Entry points are real and named in
+`package.json`: `tsx server.ts` (dev) and a build that bundles both `server.ts`
+and `orchestrator-core.ts`.
+
+This is the richest capability store in the ecosystem, and it overlaps M. Engine
+more than anything else audited.
+
+| Component | What it actually is | Classification |
+| --- | --- | --- |
+| `src/server/memory/persistentVault.ts` | **A real local vector store.** `sqlite-vec` `vec0(embedding float[768])` virtual table, `EmbeddingEngine.embed()` → `Float32Array`, insert into `vec_memory`, query by vector. | **ADAPT — see the dimension finding** |
+| `src/server/memory/pineconeNexus.ts` | Thin cached Pinecone client, LRU-wrapped. Returns `null` with no API key, throws rather than pretending. Honest. | **FEDERATE** (remote, key-gated) |
+| `src/server/memory/RedisStateStore.ts`, `lruCache.ts` | Shared state + caching | PRESERVE AS REFERENCE |
+| `daemon/` (16 Python) | `swarm_orchestrator`, `daemon_executor`, `daemon_sandbox`, `docker_test_sandbox`, `daemon_graph_engine`, `daemon_telemetry`, `self_healing_loop`, `pd_torque_controller`, `vulkan_wrapper`, `index_bannon` | **AUDIT FURTHER** per daemon |
+| `daemon/daemon_sandbox.py`, `docker_test_sandbox.py` + `dockerode` | Containerised execution | **FEDERATE** |
+| `daemon/daemon_blender.py` | A second Blender path | **DEPRECATE DUPLICATION** — `blendforge` is the better-packaged one (queue + container) |
+| `daemon/daemon_retrieval.py` | **TF-IDF + cosine over workspace files.** See the naming trap below. | PRESERVE AS REFERENCE |
+| deps: `@langchain/langgraph`, `@modelcontextprotocol/sdk` | Agent orchestration + MCP | **AUDIT FURTHER** |
+| deps: `@mediapipe/pose` | Pose capture — overlaps Bannon's `video_to_clip` | PRESERVE AS REFERENCE |
+| deps: `@codesandbox/sandpack-react` | In-browser IDE — overlaps bolt.diy | **DEPRECATE DUPLICATION** (bolt.diy is the richer one) |
+
+### THE FINDING: M. Engine's Memory Level 4 has an implementation to adapt — but NOT to copy
+
+`M_ENGINE_REALITY_VERIFICATION_REPORT.md` records Level 4 (semantic retrieval) as
+not existing. `persistentVault.ts` is a working instance of exactly that shape.
+But the two do not fit as-is, and the mismatch is silent:
+
+| | M. Engine | God-Mode-OS |
+| --- | --- | --- |
+| Embedding model | `all-MiniLM-L6-v2.onnx` | (its own `EmbeddingEngine`) |
+| **Dimensions** | **384** (`FloatArray(384)`) | **768** (`vec0(embedding float[768])`) |
+| Vector index | none | `sqlite-vec` virtual table |
+| Store | Room + SQLCipher | `better-sqlite3` |
+
+**384 ≠ 768.** Adopting the vault's schema unchanged would produce a table that
+silently never matches anything M. Engine embeds. And `sqlite-vec` is a C
+extension that would have to be built for Android, on top of SQLCipher.
+
+So the classification is **ADAPT THE ARCHITECTURE, NOT THE CODE**: embed →
+vector table → similarity query, with the dimension taken from M. Engine's own
+model. M. Engine already has the embedding half (`EmbeddingEngine`,
+`MemoryFragment`, `GraphNode`, `ContextReconstructionEngine`) — Level 4's absence
+is not "no embeddings", it is **no retrieval index over the canonical ledger**.
+
+### A fabrication-shaped fallback, recorded so it is not copied
+
+`persistentVault.ts` falls back to a `DummyStmt` when `better-sqlite3` is
+missing, whose `run()` returns `{ changes: 1, lastInsertRowid: Date.now() }` and
+whose `all()` returns `[]`. **A write that failed reports one row changed.** That
+is a silent success on a store that does not exist — precisely what
+`REALITY_CONTRACT.md` §7 rejects. If this architecture is adapted, the degrade
+path must report `UNAVAILABLE`, not fake a receipt.
+
+### The second naming trap in two repositories
+
+`daemon_retrieval.py` documents itself as matching *"semantic criteria via cosine
+similarity"*. It is **TF-IDF** — lexical term statistics, not semantics. Cosine
+similarity over TF-IDF vectors finds shared words, not shared meaning. Useful,
+and not what the docstring claims. Recorded beside CODEDUMMY's `memory/`
+(two markdown files) because both would mislead anyone classifying from names.
 
 ---
 

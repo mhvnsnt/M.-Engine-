@@ -162,8 +162,43 @@
     {
       "name": "mhvnsnt/God-Mode-OS-D3MN-V2",
       "visibility": "private",
-      "role": "unknown",
-      "state": "PENDING_ATTACH"
+      "role": "capability_source",
+      "state": "STRUCTURALLY_VERIFIED",
+      "stack": [
+        "TypeScript",
+        "React",
+        "Python"
+      ],
+      "files": 519,
+      "commit": "3b9bdf4",
+      "package": "god-mode-nexus",
+      "entry_points": [
+        "server.ts",
+        "orchestrator-core.ts"
+      ],
+      "capabilities": [
+        "local_vector_memory",
+        "remote_vector_memory",
+        "containerised_execution",
+        "swarm_orchestration",
+        "telemetry",
+        "pose_capture",
+        "graph_engine"
+      ],
+      "components": {
+        "persistentVault.ts": "ADAPT",
+        "pineconeNexus.ts": "FEDERATE",
+        "daemon_sandbox/docker_test_sandbox": "FEDERATE",
+        "daemon_blender.py": "DEPRECATE_DUPLICATION",
+        "daemon_retrieval.py": "PRESERVE_AS_REFERENCE",
+        "sandpack": "DEPRECATE_DUPLICATION",
+        "langgraph/mcp": "AUDIT_FURTHER"
+      },
+      "blocking_findings": [
+        "embedding dimension mismatch: M. Engine 384 vs vault 768",
+        "sqlite-vec is a C extension needing an Android build alongside SQLCipher",
+        "DummyStmt fallback reports changes:1 on a failed write"
+      ]
     },
     {
       "name": "mhvnsnt/URBAN-MAYHEM-",
