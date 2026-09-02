@@ -18,7 +18,8 @@ Nothing here has been built or run. Machine-readable twin:
 | `mhvnsnt/Wrestli6game-3` | public | 48 | React + Vite + TS | A second wrestling game with a **modular** engine: `fighter.ts` 74KB, `character3d.ts` 49KB, `physics`, `referee`/`referee3d`, `moveLibrary`, `sovereign`, `roster.ts` 64KB; components incl. `CreationSuite`, `Customizer`, `TournamentMode`, `PromoScreen`, `MatchRating` | **HIGH — see below** |
 | `mhvnsnt/M-Hero-Simulator-` | public | 39 | TS + cjs | Small AI-Studio-style app; carries the same throwaway `fix_*.cjs` / `patch_*.cjs` pattern M. Engine had | low |
 | `mhvnsnt/UnrealEngine` | private | — | UE 5.8 | Epic fork. **Source of Lyra** (`Samples/Games/Lyra`) | acquired — see `BANNON_LYRA_FULL_INTEGRATION_MATRIX.md` |
-| `mhvnsnt/CODEDUMMY`, `CODEDUMMY-` | private | — | ? | Named in Bannon's `CLAUDE.md` as the **other half of the two-agent team** (God-Mode OS side) | **PENDING_ATTACH — likely high** |
+| `mhvnsnt/CODEDUMMY` | private | **1,999** | TS + React + C + Python | **ATTACHED AND AUDITED — see below** | **HIGH** |
+| `mhvnsnt/CODEDUMMY-` | private | — | ? | second CODEDUMMY | PENDING_ATTACH |
 | `mhvnsnt/God-Mode-OS`, `-D3MN`, `-D3MN-V2` | private | — | ? | The God Mode OS referenced throughout Bannon's `CLAUDE.md`; `BANNON_GODMODE` is its in-game front end | **PENDING_ATTACH — likely high** |
 | `mhvnsnt/URBAN-MAYHEM-` | private | — | ? | Another game | PENDING_ATTACH |
 | `mhvnsnt/Dream-Infinite-World` | private | — | ? | Unknown | PENDING_ATTACH |
@@ -81,6 +82,52 @@ worked example, in the same domain and language, of the module boundaries Bannon
 single file does not have. Read it when splitting `BANNON_v150.html`, and check
 `CreationSuite` / `TournamentMode` / `MatchRating` for systems Bannon may not
 have — but verify against Bannon's own before importing anything.
+
+---
+
+## CODEDUMMY — attached and audited
+
+`668aca6`, 1,999 files, 245 MB. 372 `.ts`, 278 `.md`, 212 `.tsx`, 143 `.cjs`,
+112 `.h`, 97 `.c`, 66 `.py`. Bannon's `CLAUDE.md` names it as the other half of
+the two-agent team, and it is the largest capability store outside the two main
+repositories.
+
+| Component | Size | What it is | Classification |
+| --- | ---: | --- | --- |
+| `blendforge/` | 4 files | **A real BullMQ + Redis worker running headless Blender in Docker.** `worker.js` consumes a `blender-pipeline` queue, takes `{blendFilePath, outputGlbPath}` and converts. Dockerfile builds headless Blender 4.x on python:3.10-slim. | **FEDERATE** |
+| `godmode/` | **524** | The God Mode OS as a React/Vite app: `daemon/`, `vault/`, `training_data/`, `database/projectMigrations.ts`, `engine/`, `physics/`, `server/`, plus `BANNON_SWARM_BUILDER_v50_1.html` and a `compile-bridge.js`. Matches the description in Bannon's `CLAUDE.md` (daemon, app, EvolutionDaemon, swarm, vault/RAG). | **AUDIT FURTHER** — likely overlaps M. Engine's governor |
+| root `*.ts` modules | 21 | A **second independent decomposition** of Bannon's domain: `KinematicCore`, `PhysicsCollider`, `CombatAI`, `MatchDirector`, `CharacterForge`, `CharacterModelGen`, `FighterEvolution`, `SpatialEnvironment`, `InputMatrix`, `FXRenderer`, `AudioSynth`, `Cosmology`, `CloudPersistence`, `DaemonCore`, plus `server.ts` and `start-autonomous-agent.ts` | **PRESERVE AS REFERENCE** |
+| `canon/` | 16 | **The story bible** — six book manuscripts plus character files (`edwin_kennedy`, `stan_combs`, `free_agents_roster`, `finxsse_match_notes`). Names that appear in Bannon's live roster. Narrative source, not a capability. | **PRESERVE AS REFERENCE** |
+| `box3d-0.1.0/` | 209 C | A vendored 3D physics library | UNAUDITED |
+| `blender-mcp-main/`, `tools/blender/` | — | Blender MCP integration; `convert.py`, `extract_anim.py` | **FEDERATE** with `blendforge` |
+| `harness-main/` | 35 | Third-party Claude plugin marketplace clone | NOT RELEVANT |
+| `memory/` | 2 | Two markdown logs. **Not a memory system** — the name is misleading. | NOT RELEVANT |
+| `BANNON_v150.html` | 32,467 lines | An **older, smaller** copy — Bannon's own is 60,064 lines. CODEDUMMY is not the source of truth for the game. | DEPRECATE DUPLICATION |
+
+### What this changes
+
+**1. `blendforge` is the asset-conversion worker the Unreal content pipeline needs.**
+Bannon's model pipeline (`ingest_character.sh`, `transfer_weights.cjs`,
+`optimize_gltf.cjs`) runs as local scripts. `blendforge` is the same class of work
+already packaged as a queued, containerised worker. It is the natural second
+member of the worker fabric alongside `tools/unreal-worker`, and it is the piece
+that turns "GLB normalization" from a manual step into a fabric capability.
+
+**2. There are now TWO independent decompositions of Bannon's domain** —
+CODEDUMMY's root modules and `Wrestli6game-3`'s `engine/`. Neither is a merge
+candidate; together they are two worked examples of where the module boundaries
+fall, which is worth more than one when splitting a 60k-line file.
+
+**3. `canon/` is Project/Library material.** Six books and character notes that
+the Bannon roster is derived from. M. Engine's Project authority and Library
+artifact graph are the right home for it — it is exactly the kind of owner
+context that should be retrievable rather than sitting in a repository nobody
+searches.
+
+**4. `memory/` is a naming trap.** It contains two markdown logs. Anything
+planning to "reuse CODEDUMMY's memory system" would find nothing there. Recorded
+so the mistake is not made from the directory name — the same class of error as
+`mdickie_bases/` in Bannon.
 
 ---
 
