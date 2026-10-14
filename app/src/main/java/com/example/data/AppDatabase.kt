@@ -3,7 +3,36 @@ package com.example.data
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [MessageEntity::class, StyleProfileEntity::class, EndpointEntity::class, MemoryFragment::class, WorkspaceEntity::class, FileEntity::class, SessionEntity::class, UserConstraints::class, LocationSnapshot::class, RegionProfile::class, AstroProfile::class, GraphNode::class, CapabilityKnowledgeEntity::class, JobEntity::class, MissionEntity::class, CapabilityStateEntity::class, ConversationEventEntity::class, OwnerGoalEntity::class, TerminologyPreferenceEntity::class, ProjectEntity::class, ProjectAssociationEntity::class, ProjectMemoryEntity::class, ArtifactEntity::class, WorkerJobEntity::class], version = 13, exportSchema = false)
+@Database(
+    entities = [
+        MessageEntity::class,
+        StyleProfileEntity::class,
+        EndpointEntity::class,
+        MemoryFragment::class,
+        WorkspaceEntity::class,
+        FileEntity::class,
+        SessionEntity::class,
+        UserConstraints::class,
+        LocationSnapshot::class,
+        RegionProfile::class,
+        AstroProfile::class,
+        GraphNode::class,
+        CapabilityKnowledgeEntity::class,
+        JobEntity::class,
+        MissionEntity::class,
+        CapabilityStateEntity::class,
+        ConversationEventEntity::class,
+        OwnerGoalEntity::class,
+        TerminologyPreferenceEntity::class,
+        ProjectEntity::class,
+        ProjectAssociationEntity::class,
+        ProjectMemoryEntity::class,
+        ArtifactEntity::class,
+        WorkerJobEntity::class,
+    ],
+    version = 13,
+    exportSchema = false,
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun messageDao(): MessageDao
     abstract fun sessionDao(): SessionDao

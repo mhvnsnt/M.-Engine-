@@ -44,7 +44,7 @@ sealed class Screen(val route: String, val title: String, val icon: androidx.com
 fun MainScreen(viewModel: ChatViewModel, workspaceViewModel: com.example.ui.WorkspaceViewModel) {
     val isOnboardingComplete by viewModel.settingsRepository.isOnboardingCompleteFlow.collectAsStateWithLifecycle(initialValue = false)
     val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
-    val controlPlaneRepository = remember { RemoteControlPlaneRepository() }
+    val controlPlaneRepository = remember { RemoteControlPlaneRepository.shared }
     
     if (!isOnboardingComplete) {
         OnboardingScreen(onComplete = {

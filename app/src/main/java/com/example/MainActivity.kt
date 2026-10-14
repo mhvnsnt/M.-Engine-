@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppShell(viewModel = viewModel, workspaceViewModel = workspaceViewModel, projects = projectRepository)
+                    AppShell(viewModel, workspaceViewModel, projectRepository)
                 }
             }
         }
