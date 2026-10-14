@@ -159,3 +159,6 @@ No worker claim becomes a system fact merely because the worker said it. Worker 
 GLOBAL M. ENGINE INVARIANT — GEOSPATIAL PRIVACY & RELEVANCE
 
 Physical anchoring must improve relevance, not become unnecessary surveillance. M. Engine should retrieve the minimum geographic precision needed for the current objective and keep symbolic geographic interpretations explicitly separate from empirical recommendations.
+
+## No-data-loss rules (MANDATORY)
+Read and follow [`docs/NO-DATA-LOSS-RULES.md`](docs/NO-DATA-LOSS-RULES.md) (canonical: mhvnsnt/agent-ops). No force-push, no rebase/amend of pushed work, no history rewrite, no branch/asset deletion without backup + owner approval, PRs only, empty D-filter + gitleaks + green CI before merge, push incrementally, keep WORKLOG, back up and sha256-verify before disk cleanup, never touch other agents' or Muse's work.
