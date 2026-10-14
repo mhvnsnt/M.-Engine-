@@ -159,3 +159,6 @@ No worker claim becomes a system fact merely because the worker said it. Worker 
 GLOBAL M. ENGINE INVARIANT — GEOSPATIAL PRIVACY & RELEVANCE
 
 Physical anchoring must improve relevance, not become unnecessary surveillance. M. Engine should retrieve the minimum geographic precision needed for the current objective and keep symbolic geographic interpretations explicitly separate from empirical recommendations.
+
+## Muse training pack
+Muse/Ashes and every agent: read the [Muse training pack](https://github.com/mhvnsnt/money-machine-hq/tree/main/docs/muse-training-pack) (instructions, pre-flight checklist, real before/after examples, right-way videos) before every job.
