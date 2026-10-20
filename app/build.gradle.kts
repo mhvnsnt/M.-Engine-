@@ -208,6 +208,10 @@ dependencies {
  */
 detekt {
     buildUponDefaultConfig = true
+    // Rule adjustments where detekt's defaults contradict Compose/Room idiom.
+    // Documented in the file itself; this is deliberately NOT a way to silence
+    // findings in ordinary code.
+    config.setFrom(files("detekt.yml"))
     // Findings present when the gate was introduced are recorded here rather
     // than suppressed; the file is a visible, reviewable debt list.
     baseline = file("detekt-baseline.xml")

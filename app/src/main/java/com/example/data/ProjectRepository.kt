@@ -21,6 +21,25 @@ import java.util.UUID
  *     REPORTED. Only [verifyWorkerResult], which requires supporting artifact
  *     ids, writes `verifiedResult` and moves it to VERIFIED.
  */
+/**
+ * Characters of a UUID kept in a generated id. Enough to stay unique across a
+ * single owner's projects while remaining readable in a log line.
+ */
+private const val ID_SUFFIX_LENGTH = 8
+
+/**
+ * Where an artifact belongs. Grouped rather than passed as four more
+ * parameters because these always travel together and are all optional
+ * linkage — none of them is part of the artifact's identity, which is its
+ * content hash.
+ */
+data class ArtifactLinkage(
+    val projectId: String? = null,
+    val conversationId: String? = null,
+    val jobId: String? = null,
+    val provenance: String = "WORKER_PRODUCED",
+)
+
 class ProjectRepository(
     private val dao: ProjectDao,
     private val ledger: RoomConversationLedger? = null,
@@ -43,7 +62,7 @@ class ProjectRepository(
 
     suspend fun createProject(title: String, description: String = ""): ProjectEntity {
         val project = ProjectEntity(
-            id = "proj-" + UUID.randomUUID().toString().take(8),
+            id = "proj-" + UUID.randomUUID().toString().take(ID_SUFFIX_LENGTH),
             title = title,
             description = description,
         )
@@ -103,7 +122,7 @@ class ProjectRepository(
         sourceEventIds: List<String> = emptyList(),
     ): ProjectMemoryEntity {
         val entry = ProjectMemoryEntity(
-            id = "pm-" + UUID.randomUUID().toString().take(8),
+            id = "pm-" + UUID.randomUUID().toString().take(ID_SUFFIX_LENGTH),
             projectId = projectId,
             kind = kind,
             statement = statement,
@@ -134,14 +153,13 @@ class ProjectRepository(
         kind: String,
         uri: String,
         content: ByteArray,
-        projectId: String? = null,
-        conversationId: String? = null,
-        jobId: String? = null,
-        provenance: String = "WORKER_PRODUCED",
+        linkage: ArtifactLinkage = ArtifactLinkage(),
     ): ArtifactEntity {
+        val projectId = linkage.projectId
+        val conversationId = linkage.conversationId
         val hash = sha256(content)
         val artifact = ArtifactEntity(
-            id = "art-" + UUID.randomUUID().toString().take(8),
+            id = "art-" + UUID.randomUUID().toString().take(ID_SUFFIX_LENGTH),
             contentHash = hash,
             kind = kind,
             name = name,
@@ -149,8 +167,8 @@ class ProjectRepository(
             sizeBytes = content.size.toLong(),
             projectId = projectId,
             conversationId = conversationId,
-            jobId = jobId,
-            provenance = provenance,
+            jobId = linkage.jobId,
+            provenance = linkage.provenance,
         )
         dao.upsertArtifact(artifact)
         projectId?.let { dao.associate(ProjectAssociationEntity(it, "ARTIFACT", artifact.id)) }
@@ -178,7 +196,7 @@ class ProjectRepository(
         conversationId: String? = null,
     ): WorkerJobEntity {
         val job = WorkerJobEntity(
-            id = "job-" + UUID.randomUUID().toString().take(8),
+            id = "job-" + UUID.randomUUID().toString().take(ID_SUFFIX_LENGTH),
             projectId = projectId,
             conversationId = conversationId,
             capabilityType = capabilityType,

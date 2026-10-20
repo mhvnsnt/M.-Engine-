@@ -104,7 +104,28 @@ enum class RemoteGovernorState {
     SYNCING
 }
 
+/**
+ * Raised when a control-plane call is skipped because the repository is not
+ * connected. Named so callers can report *why* nothing happened instead of
+ * swallowing the attempt.
+ */
+class NotConnectedException(val state: RemoteGovernorState) :
+    IllegalStateException("Control plane not connected (state=$state)")
+
 class RemoteControlPlaneRepository {
+
+    companion object {
+        /**
+         * The single control-plane authority for the process.
+         *
+         * Connection state lives per instance, and only [refreshState] ever
+         * sets it to CONNECTED. So a component holding its own instance sits
+         * at OFFLINE forever and every gated call silently short-circuits —
+         * which is exactly how ledger sync came to be unreachable code. One
+         * shared instance means one connection state that all callers observe.
+         */
+        val shared: RemoteControlPlaneRepository by lazy { RemoteControlPlaneRepository() }
+    }
     private var currentBaseUrl: String = ""
     private var cachedApi: ControlPlaneApi? = null
 
@@ -430,26 +451,23 @@ class RemoteControlPlaneRepository {
         refreshState()
     }
 
-    suspend fun syncConversationEvents(events: List<Map<String, Any>>): Map<String, Any> {
-        if (_connectionState.value == RemoteGovernorState.CONNECTED) {
-            try {
-                return getApi().syncConversationEvents(events)
-            } catch (e: Exception) {
-                // offline
-            }
+    /**
+     * Returns a Result rather than an empty map: an empty map is also what a
+     * successful sync of zero events looks like, so returning one for "never
+     * attempted" makes a dead sync indistinguishable from a working one.
+     */
+    suspend fun syncConversationEvents(events: List<Map<String, Any>>): Result<Map<String, Any>> {
+        if (_connectionState.value != RemoteGovernorState.CONNECTED) {
+            return Result.failure(NotConnectedException(_connectionState.value))
         }
-        return emptyMap()
+        return runCatching { getApi().syncConversationEvents(events) }
     }
 
     suspend fun getConversationEvents(since: Long): Result<List<Map<String, Any>>> {
-        if (_connectionState.value == RemoteGovernorState.CONNECTED) {
-            try {
-                return Result.success(getApi().getConversationEvents(since))
-            } catch (e: Exception) {
-                return Result.failure(e)
-            }
+        if (_connectionState.value != RemoteGovernorState.CONNECTED) {
+            return Result.failure(NotConnectedException(_connectionState.value))
         }
-        return Result.failure(IllegalStateException("Not connected"))
+        return runCatching { getApi().getConversationEvents(since) }
     }
 
     suspend fun emergencyStop() {
