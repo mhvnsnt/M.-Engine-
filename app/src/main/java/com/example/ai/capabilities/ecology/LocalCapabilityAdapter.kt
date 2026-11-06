@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
  * without competing with the canonical remote ledger.
  */
 object LocalCapabilityAdapter {
-    private val repository = RemoteControlPlaneRepository()
+    private val repository = RemoteControlPlaneRepository.shared
 
     suspend fun evaluateAndExecuteLocal(wakeRecord: MetabolismWakeRecord): Boolean = withContext(Dispatchers.IO) {
         // Evaluate connection to remote

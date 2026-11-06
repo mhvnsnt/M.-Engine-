@@ -62,9 +62,11 @@ class ProjectAuthorityTest {
             kind = "LOG",
             uri = "file:///tmp/build.log",
             content = "BUILD FAILED".toByteArray(),
-            projectId = project.id,
-            conversationId = "7",
-            jobId = job.id,
+            linkage = ArtifactLinkage(
+                projectId = project.id,
+                conversationId = "7",
+                jobId = job.id,
+            ),
         )
         projects.rememberForProject(
             projectId = project.id,
@@ -121,10 +123,12 @@ class ProjectAuthorityTest {
         val project = projects.createProject("Hashing")
 
         val a = projects.registerArtifact(
-            "out.txt", "LOG", "file:///a/out.txt", "same bytes".toByteArray(), project.id,
+            "out.txt", "LOG", "file:///a/out.txt", "same bytes".toByteArray(),
+            ArtifactLinkage(projectId = project.id),
         )
         val b = projects.registerArtifact(
-            "copy.txt", "LOG", "file:///b/copy.txt", "same bytes".toByteArray(), project.id,
+            "copy.txt", "LOG", "file:///b/copy.txt", "same bytes".toByteArray(),
+            ArtifactLinkage(projectId = project.id),
         )
 
         // Different rows and different locations, but one identity.
@@ -134,7 +138,8 @@ class ProjectAuthorityTest {
 
         // Different bytes must not collide.
         val c = projects.registerArtifact(
-            "other.txt", "LOG", "file:///c", "different".toByteArray(), project.id,
+            "other.txt", "LOG", "file:///c", "different".toByteArray(),
+            ArtifactLinkage(projectId = project.id),
         )
         assertTrue(c.contentHash != a.contentHash)
 
@@ -175,7 +180,7 @@ class ProjectAuthorityTest {
         // With a real artifact, promotion succeeds.
         val evidence = projects.registerArtifact(
             "test-report.xml", "TEST_REPORT", "file:///t", "0 failures".toByteArray(),
-            projectId = project.id, jobId = job.id,
+            ArtifactLinkage(projectId = project.id, jobId = job.id),
         )
         assertTrue(projects.verifyWorkerResult(job.id, "build is green", listOf(evidence.id)))
 
@@ -199,7 +204,10 @@ class ProjectAuthorityTest {
         val project = projects.createProject("Traceability")
         projects.associateConversation(project.id, "12")
         val job = projects.startJob(project.id, "CODING", "native", "do a thing")
-        projects.registerArtifact("a.bin", "OTHER", "file:///a", "x".toByteArray(), project.id, jobId = job.id)
+        projects.registerArtifact(
+            "a.bin", "OTHER", "file:///a", "x".toByteArray(),
+            ArtifactLinkage(projectId = project.id, jobId = job.id),
+        )
         projects.recordWorkerReport(job.id, "done")
 
         val events = ledger.queryEventsByTime(0, Long.MAX_VALUE).map { it.rawContent }

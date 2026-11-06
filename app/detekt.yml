@@ -1,0 +1,37 @@
+# Rules adjusted where detekt's defaults contradict the frameworks this module
+# is written in. Everything not listed here keeps the default, and the baseline
+# stays a debt list rather than a way to wave new code through.
+
+complexity:
+  LongMethod:
+    # A Compose screen is a declarative tree, not a procedure. Splitting one at
+    # 60 lines to satisfy a line count produces fragments that only ever have a
+    # single caller, which is harder to read, not easier.
+    ignoreAnnotated: ['Composable']
+  TooManyFunctions:
+    # A Room DAO is a query surface. Its function count is the number of
+    # queries the schema needs; splitting it would scatter one table's access
+    # across several interfaces for no benefit.
+    ignoreAnnotated: ['Dao']
+    thresholdInClasses: 26
+    thresholdInInterfaces: 26
+
+naming:
+  FunctionNaming:
+    # @Composable functions are PascalCase by Compose convention — they name a
+    # UI element, not an action. detekt's default pattern predates Compose;
+    # renaming them to camelCase would break the convention every Compose
+    # codebase and the Compose compiler itself follow.
+    ignoreAnnotated: ['Composable']
+
+style:
+  ReturnCount:
+    # Early-return guard clauses are clearer than nesting the whole body in an
+    # else. detekt ships this option precisely because the bare limit of 2
+    # penalises the better-reading form.
+    excludeGuardClauses: true
+  MagicNumber:
+    # Compose dimensions and alpha values read better inline (0.6f, 12.dp) than
+    # behind a name that repeats the number. Constants are still required in
+    # non-UI logic, where a bare number really does hide intent.
+    ignoreAnnotated: ['Composable']

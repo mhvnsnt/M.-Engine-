@@ -95,7 +95,10 @@ data class ArtifactEntity(
     @PrimaryKey val id: String,
     /** SHA-256 of the content. The artifact's identity, not its location. */
     val contentHash: String,
-    /** CODE | BUILD | APK | TEST_REPORT | LOG | SCREENSHOT | IMAGE | VIDEO | AUDIO | DATASET | MODEL | DOCUMENT | OTHER */
+    /**
+     * CODE | BUILD | APK | TEST_REPORT | LOG | SCREENSHOT | IMAGE | VIDEO |
+     * AUDIO | DATASET | MODEL | DOCUMENT | OTHER
+     */
     val kind: String,
     val name: String,
     val uri: String,

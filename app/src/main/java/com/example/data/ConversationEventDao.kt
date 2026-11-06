@@ -52,6 +52,14 @@ interface ConversationEventDao {
     @Query("UPDATE conversation_events SET supersededByEventId = :successorId WHERE eventId = :eventId")
     suspend fun markSuperseded(eventId: String, successorId: String)
 
+    /**
+     * High-water mark of events that ARRIVED BY SYNC, used as the pull cursor.
+     * Deliberately not the newest event overall: locally authored messages would
+     * push that past anything the control plane still holds.
+     */
+    @Query("SELECT MAX(timestamp) FROM conversation_events WHERE migratedFrom = :origin")
+    suspend fun latestSyncedTimestamp(origin: String): Long?
+
     @Query("SELECT COUNT(*) FROM conversation_events")
     suspend fun count(): Int
 

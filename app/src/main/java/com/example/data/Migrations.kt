@@ -75,7 +75,14 @@ val MIGRATION_11_12 = object : Migration(11, 12) {
     }
 }
 
-val MIGRATION_12_13 = object : Migration(12, 13) {
+private const val INDEX_PROJECT_ASSOCIATIONS_PROJECT_ID =
+    "CREATE INDEX IF NOT EXISTS `index_project_associations_projectId` " +
+        "ON `project_associations` (`projectId`)"
+
+private const val SCHEMA_V12 = 12
+private const val SCHEMA_V13 = 13
+
+val MIGRATION_12_13 = object : Migration(SCHEMA_V12, SCHEMA_V13) {
     override fun migrate(db: SupportSQLiteDatabase) {
         // Additive: Project authority (Level 2), the Library artifact graph, and
         // worker job records. Nothing existing is touched.
@@ -95,7 +102,7 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
                 PRIMARY KEY(`projectId`, `kind`, `refId`))
             """.trimIndent(),
         )
-        db.execSQL("CREATE INDEX IF NOT EXISTS `index_project_associations_projectId` ON `project_associations` (`projectId`)")
+        db.execSQL(INDEX_PROJECT_ASSOCIATIONS_PROJECT_ID)
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_project_associations_kind` ON `project_associations` (`kind`)")
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_project_associations_refId` ON `project_associations` (`refId`)")
 
