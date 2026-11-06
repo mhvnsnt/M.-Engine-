@@ -12,7 +12,7 @@ enum class AcquisitionResultStatus {
 
 enum class CompetitionDecision {
     KEEP, // Keep current native implementation
-    REPLACE, // Replace native with external
+    REPLACE, // Reserved for explicitly authorized migrations; not the autonomous default
     COMBINE, // Combine native with external
     ADAPT, // Adapt external to native
     REJECT // Reject external
@@ -50,43 +50,43 @@ class AcquisitionEngineImpl(
         capabilityName: String,
         nativeCandidate: ResearchCandidate?
     ): AcquisitionResult {
-        
+
         // 1. Discover capabilities across time (2026, 2025, 2024, etc.)
         val candidates = discoverCandidatesAcrossTime(objective)
-        
+
         // Include native implementation in the competition
         val allCandidates = nativeCandidate?.let { candidates + it } ?: candidates
-        
+
         var bestCandidate = nativeCandidate
         var bestMetrics: BenchmarkComparison? = null
         var bestEval: CandidateEvaluation? = null
-        
+
         for (candidate in candidates) {
             // 2. Retrieve & Inspect
             if (!canRetrieve(candidate)) {
                 continue // Classify boundary honestly and stop
             }
-            
+
             // 3. License/Provenance
             val provenance = extractProvenance(candidate)
             if (provenance.license == "UNKNOWN" || provenance.license == "GPL") {
                 continue // Unacceptable license
             }
-            
+
             // 4. Security Scan
             val targetRepo = RepositoryRef(candidate.sourceType, candidate.name)
             val securityResult = securityScanner.scanRepository(targetRepo, "sandbox-temp")
             if (!securityResult.passed) {
                 continue // Security failure
             }
-            
+
             // 5. Build
             val sandboxId = sandboxManager.provisionSandbox("build-${candidate.id}", SandboxConfig(SandboxLimits(1024, 1.0f, 10), NetworkPolicy.ISOLATED, "ubuntu"))
             val buildResult = verificationEngine.build(targetRepo, sandboxId)
             if (!buildResult.success) {
                 continue // If it can't physically build, skip
             }
-            
+
             // 6. Benchmark
             val currentImpl = harvestMatrix.getCurrentImplementation(capabilityName)
             val testDef = BenchmarkTestDefinition(
@@ -95,16 +95,16 @@ class AcquisitionEngineImpl(
                 targetRepo = targetRepo,
                 executionScenario = TestScenario("scen-1", "Standard Flow", emptyList())
             )
-            
+
             val comparison = capabilityBenchmark.compare(currentImpl, candidate, testDef)
-            
+
             if (!comparison.candidateMetrics.buildSuccess) {
                 continue // Benchmark failure
             }
-            
+
             // 7. Evaluate Dimensions (Recency, Maturity, Adoption, etc.)
             val eval = evaluateCandidate(candidate, comparison)
-            
+
             // 8. Compare
             if (bestMetrics == null || comparison.candidateMetrics.effectivenessScore > bestMetrics.candidateMetrics.effectivenessScore) {
                 bestCandidate = candidate
@@ -112,7 +112,7 @@ class AcquisitionEngineImpl(
                 bestEval = eval
             }
         }
-        
+
         if (bestCandidate == null || bestMetrics == null || bestEval == null) {
             return AcquisitionResult(
                 status = AcquisitionResultStatus.ERROR,
@@ -121,7 +121,7 @@ class AcquisitionEngineImpl(
                 decision = CompetitionDecision.REJECT
             )
         }
-        
+
         if (bestCandidate.isNativeMengine) {
             return AcquisitionResult(
                 status = AcquisitionResultStatus.INFERIOR_CAPABILITY,
@@ -132,45 +132,46 @@ class AcquisitionEngineImpl(
             )
         }
 
-        // 9. Adapt & Integrate -> branch creation
-        val branchName = "integrate/${capabilityName.lowercase()}-${bestCandidate.name}"
+        // 9. Adapt & Integrate -> additive branch creation.
+        // Native functionality remains intact; the external capability is proposed as a layer.
+        val branchName = "augment/${capabilityName.lowercase()}-${bestCandidate.name}"
         val myEngineRepo = RepositoryRef("mhvnsnt", "M.-Engine-", "main")
-        
+
         githubService.createBranch(myEngineRepo, branchName)
-        githubService.commitAndPush(myEngineRepo, "Integrate ${bestCandidate.name}", "Integrate improved $capabilityName capability.")
-        
+        githubService.commitAndPush(myEngineRepo, "Augment ${bestCandidate.name}", "Add ${bestCandidate.name} as an additive $capabilityName capability; preserve the native implementation.")
+
         // 10. Test & Reality Verify -> in branch
         val candidateRecord = ImplementationRecord(
             capabilityName, bestCandidate.name, bestCandidate.url, bestMetrics.candidateMetrics.effectivenessScore, "ledger-${bestCandidate.id}"
         )
-        
+
         // 11. PR -> Human Approval
         val prDetails = PRDetails(
-            title = "Integration: Upgrade $capabilityName with ${bestCandidate.name}",
-            body = "Benchmark proved superior: +${bestMetrics.deltaScore} points.\\n" +
-                   "Decision: REPLACE native.\\n" +
+            title = "Augment $capabilityName with ${bestCandidate.name}",
+            body = "Benchmark proved useful: +${bestMetrics.deltaScore} points.\\n" +
+                   "Decision: COMBINE with native implementation; do not replace the incumbent.\\n" +
                    "Provenance: ${bestEval.provenance?.license} / ${bestEval.provenance?.originalRepo}\\n" +
                    "Security: Passed.\\n" +
                    "Evidence Ledger: ${candidateRecord.evidenceLedgerId}",
             headBranch = branchName,
             baseBranch = "main"
         )
-        
+
         val prId = githubService.createPullRequest(myEngineRepo, prDetails)
-        
+
         // 12. Learn
         harvestMatrix.registerCandidateEvaluation(capabilityName, candidateRecord)
-        
+
         return AcquisitionResult(
             status = AcquisitionResultStatus.PR_CREATED_WAITING_APPROVAL,
             candidate = bestCandidate,
-            message = "Capability verified. PR created for human approval.",
-            decision = CompetitionDecision.REPLACE,
+            message = "Capability verified. Additive PR created for human approval; native implementation is preserved.",
+            decision = CompetitionDecision.COMBINE,
             prUrl = prId,
             benchmarkMetrics = bestMetrics
         )
     }
-    
+
     private fun discoverCandidatesAcrossTime(objective: String): List<ResearchCandidate> {
         // Simulating discovering candidates across different years to compare maturity vs recency
         return listOf(
@@ -179,11 +180,11 @@ class AcquisitionEngineImpl(
             ResearchCandidate("oh-2024", "OpenHands-2024", "GITHUB", "https://github.com/oh", "Mature agent", "v1.0", 2023, 2024, 5000, 1000, 800)
         )
     }
-    
+
     private fun canRetrieve(candidate: ResearchCandidate): Boolean {
         return true
     }
-    
+
     private fun extractProvenance(candidate: ResearchCandidate): ProvenanceRecord {
         return ProvenanceRecord(
             originalRepo = candidate.url,
@@ -197,7 +198,7 @@ class AcquisitionEngineImpl(
             integrationStatus = "PENDING"
         )
     }
-    
+
     private fun evaluateCandidate(candidate: ResearchCandidate, metrics: BenchmarkComparison): CandidateEvaluation {
         return CandidateEvaluation(
             effectivenessScore = metrics.candidateMetrics.effectivenessScore.toInt(),
