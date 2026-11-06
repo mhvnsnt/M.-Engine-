@@ -47,8 +47,17 @@ cd "$SUP_DIR" || exit 1
 nohup node server.js --port "$PORT" >> "$LOG" 2>&1 &
 disown 2>/dev/null
 
-sleep 3
-if curl -sf --max-time 10 "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then
+# Poll the health endpoint until the server is up (startup can take
+# several seconds; a single fixed sleep produced false "failed to start" errors).
+READY=false
+for _ in $(seq 1 10); do
+  sleep 3
+  if curl -sf --max-time 10 "http://127.0.0.1:$PORT/health" >/dev/null 2>&1; then
+    READY=true
+    break
+  fi
+done
+if [ "$READY" = true ]; then
   echo "$(ts) supervisor restarted successfully" >> "$LOG"
   exit 0
 else
